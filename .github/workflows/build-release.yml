@@ -1,0 +1,50 @@
+name: Publish release on GitHub (only fill file), Modrinth and Curseforge
+
+on:
+  release:
+    types:
+      - published
+
+jobs:
+  build:
+    permissions:
+      contents: write
+    runs-on: ubuntu-24.04
+    steps:
+      - name: checkout repository
+        uses: actions/checkout@v4
+      - name: validate gradle wrapper
+        uses: gradle/actions/wrapper-validation@v4
+      - name: setup jdk
+        uses: actions/setup-java@v4
+        with:
+          java-version: '25'
+          distribution: 'microsoft'
+      - name: make gradle wrapper executable
+        run: chmod +x ./gradlew
+
+      - name: build
+        run: ./gradlew build -Dbuild.release=true
+
+      - name: Upload artifacts to Modrinth, Curseforge and GitHub
+        uses: Kir-Antipov/mc-publish@v3.3
+        with:
+          modrinth-id: o6CQ8dwL
+          modrinth-token: ${{ secrets.MODRINTH_TOKEN }}
+
+          curseforge-id: 1497170
+          curseforge-token: ${{ secrets.CURSEFORGE_TOKEN }}
+
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+
+          files: build/libs/!(*-@(dev|sources|all)).jar
+
+          version-type: beta
+          loaders: fabric
+          dependencies: |
+            fabric-api(required)
+            modmenu(optional)
+          game-versions: |
+            26.2
+          java: |
+            >=25

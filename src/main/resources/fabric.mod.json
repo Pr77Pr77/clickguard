@@ -1,0 +1,38 @@
+{
+	"schemaVersion": 1,
+	"id": "clickguard",
+	"version": "${version}",
+	"name": "ClickGuard",
+	"description": "This is an example description! Tell everyone what your mod is about!",
+	"authors": [
+		"Me!"
+	],
+	"contact": {
+		"homepage": "https://fabricmc.net/",
+		"sources": "https://github.com/FabricMC/fabric-example-mod"
+	},
+	"license": "CC0-1.0",
+	"icon": "assets/clickguard/icon.png",
+	"environment": "*",
+	"entrypoints": {
+		"main": [
+			"de.pr77pr77.clickguard.ClickGuard"
+		],
+		"client": [
+			"de.pr77pr77.clickguard.client.ClickGuardClient"
+		]
+	},
+	"mixins": [
+		"clickguard.mixins.json",
+		{
+			"config": "clickguard.client.mixins.json",
+			"environment": "client"
+		}
+	],
+	"depends": {
+		"fabricloader": ">=0.19.3",
+		"minecraft": "~26.2",
+		"java": ">=25",
+		"fabric-api": "*"
+	}
+}

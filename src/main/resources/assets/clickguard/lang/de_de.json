@@ -1,0 +1,21 @@
+{
+  "key.categories.clickguard.clickguard": "ClickGuard",
+  "key.clickguard.openPresetsScreen": "ClickGuards Voreinstellungsmenü öffnen",
+  "clickguard.presets.title": "ClickGuard Voreinstellungen",
+  "clickguard.presets.new": "Neue Voreinstellung Erstellen",
+  "clickguard.presets.edit": "Voreinstellung Bearbeiten",
+  "clickguard.presets.delete.question": "Bist du sicher, dass du diese Voreinstellung löschen möchtest?",
+  "clickguard.name": "Name",
+  "clickguard.start": "Klicken Starten",
+  "clickguard.stop": "Klicken Stoppen",
+  "clickguard.keybind.choose": "Taste für Autoklicken Auswählen",
+  "clickguard.keybind.select": "Auswählen",
+  "clickguard.type.description": "Klicktyp",
+  "clickguard.type.continuous": "Halten",
+  "clickguard.type.cooldownAware": "An Cooldown angepasst",
+  "clickguard.type.customTiming": "Benutzerdefinierte Zeiten",
+  "clickguard.timing.interval": "Intervall zwischen Klicks (Minuten:Sekunden.Millisekunden)",
+  "clickguard.timing.CPS": "Klicks pro sekunde (CPS)",
+  "clickguard.timing.duration": "Klickdauer (milliseconds)",
+  "clickguard.timing.noCustomTiming": "Zeiten können nur beim Typ 'Benutzerdefinierte Zeiten' gesetzt werden."
+}

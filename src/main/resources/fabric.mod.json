@@ -3,17 +3,18 @@
 	"id": "clickguard",
 	"version": "${version}",
 	"name": "ClickGuard",
-	"description": "This is an example description! Tell everyone what your mod is about!",
+	"description": "An auto clicker mod for Fabric that lets you automate any keybind, with smart safety features like auto-disable on damage or low health/hunger.",
 	"authors": [
-		"Me!"
+		"Pr77Pr77"
 	],
 	"contact": {
-		"homepage": "https://fabricmc.net/",
-		"sources": "https://github.com/FabricMC/fabric-example-mod"
+		"homepage": "https://modrinth.com/mod/clickguard",
+		"sources": "https://github.com/Pr77Pr77/clickguard",
+		"issues": "https://github.com/Pr77Pr77/clickguard/issues"
 	},
-	"license": "CC0-1.0",
+	"license": "GPL-3.0",
 	"icon": "assets/clickguard/icon.png",
-	"environment": "*",
+	"environment": "client",
 	"entrypoints": {
 		"main": [
 			"de.pr77pr77.clickguard.ClickGuard"
@@ -29,9 +30,10 @@
 			"environment": "client"
 		}
 	],
+	"accessWidener": "clickguard.accesswidener",
 	"depends": {
-		"fabricloader": ">=0.19.3",
-		"minecraft": "~26.2",
+		"fabricloader": ">=${loader_version}",
+		"minecraft": ">=${minecraft_version} <${next_major_minecraft_version}",
 		"java": ">=25",
 		"fabric-api": "*"
 	}

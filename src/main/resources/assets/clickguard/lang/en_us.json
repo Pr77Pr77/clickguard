@@ -1,0 +1,21 @@
+{
+  "key.categories.clickguard.clickguard": "ClickGuard",
+  "key.clickguard.openPresetsScreen": "Open ClickGuard's presets menu",
+  "clickguard.presets.title": "ClickGuard presets",
+  "clickguard.presets.new": "Create new preset",
+  "clickguard.presets.edit": "Edit preset",
+  "clickguard.presets.delete.question": "Are you sure you want to delete this preset?",
+  "clickguard.name": "Name",
+  "clickguard.start": "Start clicking",
+  "clickguard.stop": "Stop clicking",
+  "clickguard.keybind.choose": "Choose key for auto clicking",
+  "clickguard.keybind.select": "Select",
+  "clickguard.type.description": "Clicking type",
+  "clickguard.type.continuous": "Continuous",
+  "clickguard.type.cooldownAware": "Cooldown aware",
+  "clickguard.type.customTiming": "Custom timing",
+  "clickguard.timing.interval": "Interval between clicks (minutes:seconds.milliseconds)",
+  "clickguard.timing.CPS": "Clicks per second (CPS)",
+  "clickguard.timing.duration": "Click duration (milliseconds)",
+  "clickguard.timing.noCustomTiming": "Timings can only be set with type 'Custom timing'"
+}

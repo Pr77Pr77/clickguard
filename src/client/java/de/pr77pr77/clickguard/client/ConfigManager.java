@@ -30,9 +30,7 @@ public class ConfigManager {
 
     ConfigManager() {
         filePath = FabricLoader.getInstance().getConfigDir().resolve("clickguard.json");
-        ClientLifecycleEvents.CLIENT_STARTED.register(client -> {
-            load();
-        });
+        ClientLifecycleEvents.CLIENT_STARTED.register(_ -> load());
     }
 
     public class ConfigData {
@@ -42,7 +40,7 @@ public class ConfigManager {
             public String name = "";
             public KeyMapping keybind;
 
-            public ClickingType clickingType = ClickingType.COOLDOWN_AWARE;
+            public ClickingType clickingType = ClickingType.CUSTOM_TIMING;
             public int customIntervalMS = 100; // 100 = 10 CPS
             public int holdingDurationMS = 40;
 
@@ -51,8 +49,8 @@ public class ConfigManager {
 
         public enum ClickingType {
             CONTINUOUS("clickguard.type.continuous"),
-            COOLDOWN_AWARE("clickguard.type.cooldownAware"),
-            CUSTOM_TIMING("clickguard.type.customTiming");
+            CUSTOM_TIMING("clickguard.type.customTiming"),
+            COOLDOWN_AWARE("clickguard.type.cooldownAware");
 
             public final String translationKey;
 

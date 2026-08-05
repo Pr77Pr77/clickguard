@@ -82,6 +82,10 @@ public class ChooseKeybindScreen extends Screen {
                 addEntry(new Entry(minecraft, keyMapping, keyMappingClicked -> {
                     if (screen.preset != null) {
                         screen.preset.keybind = keyMappingClicked;
+                        if (screen.preset.clickingType == ConfigManager.ConfigData.ClickingType.COOLDOWN_AWARE &&
+                                !screen.preset.keybind.getName().equals("key.attack")) {
+                            screen.preset.clickingType = ConfigManager.ConfigData.ClickingType.CUSTOM_TIMING;
+                        }
                         minecraft.gui.setScreen(screen.parent);
                     } else {
                         minecraft.gui.setScreen(new EditPresetScreen(screen.parent, keyMappingClicked));

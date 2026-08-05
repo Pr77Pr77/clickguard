@@ -14,6 +14,7 @@ import net.minecraft.util.CommonColors;
 import org.jspecify.annotations.NonNull;
 
 import java.util.List;
+import java.util.Arrays;
 import java.util.Optional;
 import java.util.function.Consumer;
 import java.math.BigDecimal;
@@ -73,10 +74,22 @@ public class EditPresetScreen extends Screen {
     @Override
     public void repositionElements() {
         layout.arrangeElements();
-        if (list != null) list.updateSize(width, layout);
-        assert list != null;
+        if (list == null) {
+            return;
+        }
+        list.updateSize(width, layout);
         for (OptionsList.Entry entry : list.children()) {
             entry.init();
+        }
+    }
+
+    @Override
+    public void added() {
+        if (list == null) {
+            return;
+        }
+        for (OptionsList.Entry entry : list.children()) {
+            entry.screenAdded();
         }
     }
 
@@ -221,6 +234,9 @@ public class EditPresetScreen extends Screen {
         public abstract static class Entry
                 extends ContainerObjectSelectionList.Entry<Entry> {
             abstract void init(); // Initializer after adding, getContentWidth and positions available.
+
+            void screenAdded() {
+            }
         }
 
         public static class ButtonEntry extends Entry {
@@ -306,7 +322,7 @@ public class EditPresetScreen extends Screen {
         }
 
         public static class ClickingTypeEntry extends Entry {
-            private final CycleButton<ConfigManager.ConfigData.ClickingType> typeButton;
+            private CycleButton<ConfigManager.ConfigData.ClickingType> typeButton;
             final ConfigManager.ConfigData.Preset preset;
             public final EditBox cpsEditBox;
             public final EditBox intervalEditBox;
@@ -328,14 +344,7 @@ public class EditPresetScreen extends Screen {
 
                 noCustomTimingTooltip = Tooltip.create(Component.translatable("clickguard.timing.noCustomTiming"));
 
-                typeButton = CycleButton.builder(ConfigManager.ConfigData.ClickingType::getComponent,
-                                this.preset.clickingType)
-                        .withValues(ConfigManager.ConfigData.ClickingType.values())
-                        .create(0, 0, 0, 20, Component.translatable("clickguard.type.description"),
-                                (_, value) -> {
-                                    this.preset.clickingType = value;
-                                    changeEditBoxes(value);
-                                }); // Position and size set in init
+                createTypeButton();
 
                 cpsEditBox.setResponder(value -> {
                     if (suppressCpsUpdate) {
@@ -444,6 +453,18 @@ public class EditPresetScreen extends Screen {
                 changeEditBoxes(this.preset.clickingType);
             }
 
+            void createTypeButton() {
+                typeButton = CycleButton.builder(ConfigManager.ConfigData.ClickingType::getComponent,
+                                this.preset.clickingType)
+                        .withValues(preset.keybind.getName().equals("key.attack") ? Arrays.asList(ConfigManager.ConfigData.ClickingType.values()) :
+                                List.of(ConfigManager.ConfigData.ClickingType.CUSTOM_TIMING, ConfigManager.ConfigData.ClickingType.CONTINUOUS))
+                        .create(0, 0, 0, 20, Component.translatable("clickguard.type.description"),
+                                (_, value) -> {
+                                    this.preset.clickingType = value;
+                                    changeEditBoxes(value);
+                                }); // Position and size set in init
+            }
+
             void changeEditBoxes(ConfigManager.ConfigData.ClickingType value) {
                 if (value == ConfigManager.ConfigData.ClickingType.CUSTOM_TIMING) {
                     cpsEditBox.active = true;
@@ -462,6 +483,11 @@ public class EditPresetScreen extends Screen {
                     intervalEditBox.setTooltip(noCustomTimingTooltip);
                     durationEditBox.setTooltip(noCustomTimingTooltip);
                 }
+            }
+
+            @Override
+            void screenAdded() {
+                createTypeButton();
             }
 
             @Override

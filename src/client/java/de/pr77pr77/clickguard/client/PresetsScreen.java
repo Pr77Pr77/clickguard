@@ -175,10 +175,8 @@ public class PresetsScreen extends Screen {
                                 if (preset.enabled) {
                                     clickers.add(new Clicker(preset));
                                 } else {
-                                    clickers.stream().filter(clicker -> clicker.preset == preset).forEach(clicker -> {
-                                        clicker.releaseClickIfClicking();
-                                        clickers.remove(clicker);
-                                    });
+                                    clickers.removeAll(clickers.stream().filter(clicker -> clicker.preset == preset)
+                                            .peek(Clicker::releaseClickIfClicking).toList());
                                 }
                             }
                         }); // Position and size set in init

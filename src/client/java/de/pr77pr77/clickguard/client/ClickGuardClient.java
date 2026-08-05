@@ -67,6 +67,7 @@ public class ClickGuardClient implements ClientModInitializer {
                     clickers.add(new Clicker(preset));
                 }
             }
+            // TODO: Block manual clicks
         } else {
             for (Clicker clicker : clickers) {
                 clicker.releaseClickIfClicking();

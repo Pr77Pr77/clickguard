@@ -15,8 +15,7 @@ import org.jspecify.annotations.NonNull;
 
 import java.util.List;
 
-import static de.pr77pr77.clickguard.client.ClickGuardClient.autoClickingEnabled;
-import static de.pr77pr77.clickguard.client.ClickGuardClient.toggleAutoClickingEnabled;
+import static de.pr77pr77.clickguard.client.ClickGuardClient.*;
 
 public class PresetsScreen extends Screen {
     private final HeaderAndFooterLayout layout = new HeaderAndFooterLayout(this);
@@ -171,6 +170,14 @@ public class PresetsScreen extends Screen {
                         .create(0, 0, 0, 20, Component.translatable("manageServer.resourcePack.enabled"), (_, value) -> {
                             preset.enabled = value;
                             ClickGuardClient.configManager.save();
+
+                            if (autoClickingEnabled) {
+                                if (preset.enabled) {
+                                    clickers.add(new Clicker(preset));
+                                } else {
+                                    clickers.removeIf(clicker -> clicker.preset == preset);
+                                }
+                            }
                         }); // Position and size set in init
                 editButton = Button.builder(Component.translatable("selectServer.edit"),
                         _ -> minecraft.gui.setScreen(new EditPresetScreen(parentScreen, preset))).build();

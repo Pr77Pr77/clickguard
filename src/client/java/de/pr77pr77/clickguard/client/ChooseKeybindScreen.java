@@ -22,16 +22,25 @@ public class ChooseKeybindScreen extends Screen {
     private final HeaderAndFooterLayout layout = new HeaderAndFooterLayout(this);
     private KeybindsList list;
 
+    private final ConfigManager.ConfigData.Preset preset;
+
     protected ChooseKeybindScreen(Screen parent) {
         super(Component.translatable("clickguard.keybind.choose"));
         this.parent = parent;
+        this.preset = null;
+    }
+
+    protected ChooseKeybindScreen(Screen parent, ConfigManager.ConfigData.Preset preset) {
+        super(Component.translatable("clickguard.keybind.change"));
+        this.parent = parent;
+        this.preset = preset;
     }
 
     @Override
     protected void init() {
         layout.addTitleHeader(title, font);
 
-        list = layout.addToContents(new KeybindsList(minecraft, width, layout));
+        list = layout.addToContents(new KeybindsList(minecraft, width, layout, this));
         list.fillList();
 
         LinearLayout footerButtons = LinearLayout.horizontal().spacing(8);
@@ -60,18 +69,22 @@ public class ChooseKeybindScreen extends Screen {
     }
 
     public static class KeybindsList extends ContainerObjectSelectionList<KeybindsList.Entry> {
-        public KeybindsList(Minecraft minecraft, int width, HeaderAndFooterLayout layout) {
+        private final ChooseKeybindScreen screen;
+
+        public KeybindsList(Minecraft minecraft, int width, HeaderAndFooterLayout layout, ChooseKeybindScreen screen) {
             super(minecraft, width, layout.getContentHeight(), layout.getHeaderHeight(), 30);
+            this.screen = screen;
         }
 
         public void fillList() {
             KeyMapping[] keyMappings = minecraft.options.keyMappings;
             for (KeyMapping keyMapping : keyMappings) {
                 addEntry(new Entry(minecraft, keyMapping, keyMappingClicked -> {
-                    if (minecraft.gui.screen() instanceof ChooseKeybindScreen chooseKeybindScreen) {
-                        minecraft.gui.setScreen(new EditPresetScreen(chooseKeybindScreen.parent, keyMappingClicked));
+                    if (screen.preset != null) {
+                        screen.preset.keybind = keyMappingClicked;
+                        minecraft.gui.setScreen(screen.parent);
                     } else {
-                        minecraft.gui.setScreen(new EditPresetScreen(minecraft.gui.screen(), keyMappingClicked));
+                        minecraft.gui.setScreen(new EditPresetScreen(screen.parent, keyMappingClicked));
                     }
                 }));
             }

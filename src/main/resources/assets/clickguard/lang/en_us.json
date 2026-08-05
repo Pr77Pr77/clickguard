@@ -9,6 +9,8 @@
   "clickguard.start": "Start clicking",
   "clickguard.stop": "Stop clicking",
   "clickguard.keybind.choose": "Choose key for auto clicking",
+  "clickguard.keybind.change": "Change key for auto clicking",
+  "clickguard.keybind.label": "Key for auto clicking: %s",
   "clickguard.keybind.select": "Select",
   "clickguard.type.description": "Clicking type",
   "clickguard.type.continuous": "Continuous",

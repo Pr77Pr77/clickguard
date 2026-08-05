@@ -10,9 +10,11 @@ import net.minecraft.client.gui.narration.NarratableEntry;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.network.chat.CommonComponents;
 import net.minecraft.network.chat.Component;
+import net.minecraft.util.CommonColors;
 import org.jspecify.annotations.NonNull;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.function.Consumer;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
@@ -63,6 +65,8 @@ public class EditPresetScreen extends Screen {
                         preset.name = value;
                     }
                 });
+        list.addButon(Component.translatable("clickguard.keybind.label", Component.translatable(preset.keybind.getName())),
+                _ -> minecraft.gui.setScreen(new ChooseKeybindScreen(this, preset)));
         list.addClickingTypeEntry(preset);
     }
 
@@ -85,11 +89,11 @@ public class EditPresetScreen extends Screen {
     public static class OptionsList extends ContainerObjectSelectionList<OptionsList.Entry> {
 
         public OptionsList(Minecraft minecraft, int width, HeaderAndFooterLayout layout) {
-            super(minecraft, width, layout.getContentHeight(), layout.getHeaderHeight(), 20);
+            super(minecraft, width, layout.getContentHeight(), layout.getHeaderHeight(), 20 + 8);
         }
 
-        public void addButon(Component description, Boolean value, CycleButton.OnValueChange<Boolean> onValueChange) {
-            addEntry(new ButtonEntry(description, value, onValueChange));
+        public void addButon(Component description, Button.OnPress onPress) {
+            addEntry(new ButtonEntry(description, onPress));
         }
 
         public void addEditBox(Component label, String value, Component hint, Consumer<String> responder) {
@@ -110,10 +114,14 @@ public class EditPresetScreen extends Screen {
             return this.width - 6;
         }
 
-        private static int parseIntervalToMs(String input, int fallback) {
-            if (input == null) return fallback;
+        private static Optional<Integer> parseIntervalToMs(String input) {
+            if (input == null) {
+                return Optional.empty();
+            }
             String string = input.trim();
-            if (string.isEmpty()) return fallback;
+            if (string.isEmpty()) {
+                return Optional.empty();
+            }
 
             // Allow only digits, colon and dot for parsing; remove other characters
             string = string.replaceAll("[^0-9:.]", "");
@@ -122,7 +130,9 @@ public class EditPresetScreen extends Screen {
             if (string.contains(":")) {
                 java.util.regex.Pattern p = java.util.regex.Pattern.compile("^(\\d+):(\\d{1,2})(?:\\.(\\d{1,3}))?$");
                 java.util.regex.Matcher m = p.matcher(string);
-                if (!m.matches()) return fallback;
+                if (!m.matches()) {
+                    return Optional.empty();
+                }
                 try {
                     long minutes = Long.parseLong(m.group(1));
                     int seconds = Integer.parseInt(m.group(2));
@@ -136,10 +146,10 @@ public class EditPresetScreen extends Screen {
                         else millis = frac; // .500 -> 500ms
                     }
                     long total = minutes * 60000L + (long) seconds * 1000L + millis;
-                    if (total < 0 || total > Integer.MAX_VALUE) return fallback;
-                    return (int) total;
+                    if (total < 0 || total > Integer.MAX_VALUE) return Optional.empty();
+                    return Optional.of((int) total);
                 } catch (NumberFormatException ex) {
-                    return fallback;
+                    return Optional.empty();
                 }
             }
 
@@ -148,15 +158,17 @@ public class EditPresetScreen extends Screen {
                 try {
                     long minutes = Long.parseLong(string);
                     long total = minutes * 60000L;
-                    if (total < 0 || total > Integer.MAX_VALUE) return fallback;
-                    return (int) total;
+                    if (total < 0 || total > Integer.MAX_VALUE) {
+                        return Optional.empty();
+                    }
+                    return Optional.of((int) total);
                 } catch (NumberFormatException ex) {
-                    return fallback;
+                    return Optional.empty();
                 }
             }
 
             // fallback:
-            return fallback;
+            return Optional.empty();
         }
 
         private static String formatMsToInterval(int ms) {
@@ -212,20 +224,16 @@ public class EditPresetScreen extends Screen {
         }
 
         public static class ButtonEntry extends Entry {
-            private final CycleButton<Boolean> button;
+            private final Button button;
 
-            private ButtonEntry(Component description, Boolean value, CycleButton.OnValueChange<Boolean> onValueChange) {
-                button = CycleButton.builder((Boolean option) ->
-                                        option ? Component.translatable("manageServer.resourcePack.enabled") : Component.translatable("manageServer.resourcePack.disabled"),
-                                value)
-                        .withValues(List.of(Boolean.TRUE, Boolean.FALSE))
-                        .create(0, 0, 0, 20, description, onValueChange); // Position and size set in init
+            private ButtonEntry(Component description, Button.OnPress onPress) {
+                button = Button.builder(description, onPress).build(); // Position and size set in init
             }
 
             @Override
             void init() {
-                button.setPosition(getContentX(), getContentY());
-                button.setSize(getContentWidth(), getContentHeight());
+                button.setPosition(getContentX() + 2, getContentY() + 2);
+                button.setSize(getContentWidth() - 4, getContentHeight() - 4);
             }
 
             @Override
@@ -330,27 +338,43 @@ public class EditPresetScreen extends Screen {
                                 }); // Position and size set in init
 
                 cpsEditBox.setResponder(value -> {
-                    if (suppressCpsUpdate) return;
-                    if (value.isEmpty()) return;
+                    if (suppressCpsUpdate) {
+                        cpsEditBox.setTextColor(CommonColors.TEXT_GRAY);
+                        return;
+                    }
+                    if (value.isEmpty()) {
+                        return;
+                    }
                     String original = value.trim().replace(',', '.');
                     try {
                         double cpsInput = Double.parseDouble(original);
-                        int ms;
+                        long ms;
                         if (cpsInput > 0d) { // Prevent division by zero
-                            ms = (int) Math.max(1, Math.round(1000.0 / cpsInput));
+                            ms = Math.round(1000.0 / cpsInput);
                         } else {
+                            ms = 0; // Later changed to 1, Color red in EditBox.
+                        }
+
+                        if (ms <= 0) {
+                            cpsEditBox.setTextColor(0xFFFC5454);
                             ms = 1;
+                        } else if (ms > Integer.MAX_VALUE) {
+                            cpsEditBox.setTextColor(0xFFFC5454);
+                            ms = Integer.MAX_VALUE;
+                        } else {
+                            cpsEditBox.setTextColor(CommonColors.TEXT_GRAY);
                         }
 
                         // Update preset and interval display, but do NOT overwrite user's CPS input to avoid surprising edits while typing
                         if (ms != this.preset.customIntervalMS) {
-                            this.preset.customIntervalMS = ms;
-                            String intervalFormatted = formatMsToInterval(ms);
+                            this.preset.customIntervalMS = (int) ms;
+                            String intervalFormatted = formatMsToInterval((int) ms);
                             if (!intervalFormatted.equals(intervalEditBox.getValue())) {
                                 suppressIntervalUpdate = true;
                                 intervalEditBox.setValue(intervalFormatted);
                                 suppressIntervalUpdate = false;
                             }
+                            checkDurationTooLong(preset.holdingDurationMS);
                         }
                     } catch (NumberFormatException ignored) {
                         LOGGER.warn("Invalid input for CPS: " + value);
@@ -364,21 +388,31 @@ public class EditPresetScreen extends Screen {
                     }
                 });
                 intervalEditBox.setResponder(value -> {
-                    if (suppressIntervalUpdate) return;
+                    if (suppressIntervalUpdate) {
+                        intervalEditBox.setTextColor(CommonColors.TEXT_GRAY);
+                        return;
+                    }
                     if (value.isEmpty()) {
                         return;
                     }
-                    int ms = parseIntervalToMs(value, this.preset.customIntervalMS);
-                    if (ms != this.preset.customIntervalMS && ms > 0) {
-                        this.preset.customIntervalMS = ms;
+                    Optional<Integer> ms = parseIntervalToMs(value);
+                    if (ms.isPresent() && ms.get() != this.preset.customIntervalMS && ms.get() > 0) {
+                        this.preset.customIntervalMS = ms.get();
 
-                        String formatted = formatCpsFromMs(ms);
+                        String formatted = formatCpsFromMs(ms.get());
                         if (!formatted.equals(cpsEditBox.getValue())) {
                             suppressCpsUpdate = true;
                             cpsEditBox.setValue(formatted);
                             suppressCpsUpdate = false;
                         }
+                        checkDurationTooLong(preset.holdingDurationMS);
+                        intervalEditBox.setTextColor(CommonColors.TEXT_GRAY);
+                    } else if (ms.isPresent() && ms.get() > 0) {
+                        intervalEditBox.setTextColor(CommonColors.TEXT_GRAY);
+                    } else {
+                        intervalEditBox.setTextColor(0xFFFC5454);
                     }
+
                     String cleaned = value.trim().replaceAll("[^0-9:.]", "");
                     if (!value.equals(cleaned)) {
                         suppressIntervalUpdate = true;
@@ -392,9 +426,19 @@ public class EditPresetScreen extends Screen {
                     }
                     String cleaned = value.trim().replaceAll("[^0-9:.]", "");
                     if (!value.equals(cleaned)) {
-                        intervalEditBox.setValue(cleaned);
+                        durationEditBox.setValue(cleaned);
                     }
-                    preset.holdingDurationMS = Integer.parseInt(cleaned);
+
+                    int duration;
+                    try {
+                        duration = Integer.parseInt(cleaned);
+                    } catch (NumberFormatException ignored) {
+                        LOGGER.warn("Invalid input for duration: " + value);
+                        return;
+                    }
+
+                    checkDurationTooLong(duration);
+                    preset.holdingDurationMS = duration;
                 });
 
                 changeEditBoxes(this.preset.clickingType);
@@ -446,6 +490,14 @@ public class EditPresetScreen extends Screen {
                     intervalEditBox.setValue(formatMsToInterval(this.preset.customIntervalMS));
                     durationEditBox.setValue(String.valueOf(this.preset.holdingDurationMS));
                     initialized = true;
+                }
+            }
+
+            private void checkDurationTooLong(int duration) {
+                if (duration >= preset.customIntervalMS) {
+                    duration = preset.customIntervalMS - 1;
+                    durationEditBox.setValue(String.valueOf(duration));
+                    LOGGER.warn("Duration is too high (>= interval): " + duration);
                 }
             }
 

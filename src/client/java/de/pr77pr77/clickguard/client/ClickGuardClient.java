@@ -14,7 +14,8 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class ClickGuardClient implements ClientModInitializer {
-    public static KeyMapping OpenCommandScreen;
+    public static KeyMapping openCommandScreen;
+    public static KeyMapping enableClickingKey;
 
     public static boolean autoClickingEnabled;
 
@@ -25,18 +26,33 @@ public class ClickGuardClient implements ClientModInitializer {
     @Override
     public void onInitializeClient() {
         KeyMapping.Category SavedcommandsKeyindCategory = new KeyMapping.Category(Identifier.fromNamespaceAndPath("clickguard", "clickguard"));
-        OpenCommandScreen = KeyMappingHelper.registerKeyMapping(new KeyMapping(
+        openCommandScreen = KeyMappingHelper.registerKeyMapping(new KeyMapping(
                 "key.clickguard.openPresetsScreen",
                 InputConstants.Type.KEYSYM,
                 GLFW.GLFW_KEY_COMMA,
                 SavedcommandsKeyindCategory
         ));
-
         ClientTickEvents.END_CLIENT_TICK.register(client -> {
-            while (OpenCommandScreen.consumeClick()) {
+            while (openCommandScreen.consumeClick()) {
                 client.execute(() -> {
                     if (client.gui.screen() == null) {
                         client.gui.setScreen(new PresetsScreen());
+                    }
+                });
+            }
+        });
+
+        enableClickingKey = KeyMappingHelper.registerKeyMapping(new KeyMapping(
+                "key.clickguard.toggleClicking",
+                InputConstants.Type.KEYSYM,
+                GLFW.GLFW_KEY_PERIOD,
+                SavedcommandsKeyindCategory
+        ));
+        ClientTickEvents.END_CLIENT_TICK.register(client -> {
+            while (enableClickingKey.consumeClick()) {
+                client.execute(() -> {
+                    if (client.gui.screen() == null) {
+                        toggleAutoClickingEnabled();
                     }
                 });
             }
@@ -67,7 +83,6 @@ public class ClickGuardClient implements ClientModInitializer {
                     clickers.add(new Clicker(preset));
                 }
             }
-            // TODO: Block manual clicks
         } else {
             for (Clicker clicker : clickers) {
                 clicker.releaseClickIfClicking();

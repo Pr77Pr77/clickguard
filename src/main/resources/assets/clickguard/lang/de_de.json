@@ -1,6 +1,7 @@
 {
   "key.categories.clickguard.clickguard": "ClickGuard",
   "key.clickguard.openPresetsScreen": "ClickGuards Voreinstellungsmenü öffnen",
+  "key.clickguard.toggleClicking": "ClickGuard Autoclicker umschalten",
   "clickguard.presets.title": "ClickGuard Voreinstellungen",
   "clickguard.presets.new": "Neue Voreinstellung Erstellen",
   "clickguard.presets.edit": "Voreinstellung Bearbeiten",

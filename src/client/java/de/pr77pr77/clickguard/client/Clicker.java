@@ -48,14 +48,13 @@ public class Clicker {
                 }
                 break;
             case COOLDOWN_AWARE:
-                if (Minecraft.getInstance().player != null &&
-                        Minecraft.getInstance().player.getAttackStrengthScale(1.0F) >= 1.0F && !clicking) {
+                boolean ready = Minecraft.getInstance().player != null &&
+                        Minecraft.getInstance().player.getAttackStrengthScale(1.0F) >= 1.0F;
+                if (ready && !clicking) {
                     startClick();
                     clickReleaseTime = now + 100 * 1_000_000L; // Max time until release
                 }
-                if (((Minecraft.getInstance().player != null &&
-                        Minecraft.getInstance().player.getAttackStrengthScale(1.0F) < 1.0F)
-                        || now >= clickReleaseTime) && clicking) {
+                if ((ready || now >= clickReleaseTime) && clicking) {
                     releaseClick();
                 }
         }

@@ -1,6 +1,10 @@
 package de.pr77pr77.clickguard.client.mixin;
 
+import de.pr77pr77.clickguard.client.HUD;
 import net.minecraft.client.KeyMapping;
+import net.minecraft.client.Minecraft;
+import net.minecraft.client.resources.sounds.SimpleSoundInstance;
+import net.minecraft.sounds.SoundEvents;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Redirect;
@@ -20,12 +24,17 @@ public class ManualClicksBlockingMixin {
             )
     )
     private static void clickguard$onOperationAccept(Consumer<KeyMapping> operation, Object keyMappingObj) {
-        if(keyMappingObj instanceof KeyMapping keyMapping) {
-            if(!autoClickingEnabled ||
-                    clickers.stream().noneMatch(clicker -> clicker.preset.keybind == keyMappingObj)){
+        if (keyMappingObj instanceof KeyMapping keyMapping) {
+            if (!autoClickingEnabled ||
+                    clickers.stream().noneMatch(clicker -> clicker.preset.keybind == keyMappingObj)) {
                 operation.accept(keyMapping);
             } else {
-                // TODO: Trigger HUD Warning
+                if (HUD.warningStartTime < 0) {
+                    Minecraft.getInstance().getSoundManager().play(
+                            SimpleSoundInstance.forUI(SoundEvents.VILLAGER_NO, 1.0F)
+                    );
+                    HUD.triggerWarning();
+                }
             }
         }
     }

@@ -8,6 +8,7 @@
   "clickguard.hud.customTiming": "%s: %s wird nach benutzerdefinierten Zeiten gedrückt",
   "clickguard.hud.continuous": "%s: %s wird gehalten",
   "clickguard.hud.cooldownAware": "%s: %s wird an den Cooldown angepasst gedrückt",
+  "clickguard.hud.warning.manualKeypress": "Taste durch ClickGuard gesperrt!",
   "clickguard.presets.title": "ClickGuard Voreinstellungen",
   "clickguard.presets.new": "Neue Voreinstellung Erstellen",
   "clickguard.presets.edit": "Voreinstellung Bearbeiten",

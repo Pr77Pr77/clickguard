@@ -8,6 +8,7 @@
   "clickguard.hud.customTiming": "%s: %s is being pressed according to custom timing",
   "clickguard.hud.continuous": "%s: %s is being held down",
   "clickguard.hud.cooldownAware": "%s: %s is being pressed according to the cooldown",
+  "clickguard.hud.warning.manualKeypress": "Key blocked by ClickGuard!",
   "clickguard.presets.title": "ClickGuard presets",
   "clickguard.presets.new": "Create new preset",
   "clickguard.presets.edit": "Edit preset",

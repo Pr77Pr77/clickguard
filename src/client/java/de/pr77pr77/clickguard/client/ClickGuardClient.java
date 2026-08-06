@@ -4,6 +4,8 @@ import com.mojang.blaze3d.platform.InputConstants;
 import net.fabricmc.api.ClientModInitializer;
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents;
 import net.fabricmc.fabric.api.client.keymapping.v1.KeyMappingHelper;
+import net.fabricmc.fabric.api.client.rendering.v1.hud.HudElementRegistry;
+import net.fabricmc.fabric.api.client.rendering.v1.hud.VanillaHudElements;
 import net.fabricmc.fabric.api.client.rendering.v1.level.LevelRenderEvents;
 import net.minecraft.client.KeyMapping;
 import net.minecraft.client.Minecraft;
@@ -13,8 +15,10 @@ import org.lwjgl.glfw.GLFW;
 import java.util.ArrayList;
 import java.util.List;
 
+import static de.pr77pr77.clickguard.ClickGuard.id;
+
 public class ClickGuardClient implements ClientModInitializer {
-    public static KeyMapping openCommandScreen;
+    public static KeyMapping openPresetsScreen;
     public static KeyMapping enableClickingKey;
 
     public static boolean autoClickingEnabled;
@@ -25,15 +29,15 @@ public class ClickGuardClient implements ClientModInitializer {
 
     @Override
     public void onInitializeClient() {
-        KeyMapping.Category SavedcommandsKeyindCategory = new KeyMapping.Category(Identifier.fromNamespaceAndPath("clickguard", "clickguard"));
-        openCommandScreen = KeyMappingHelper.registerKeyMapping(new KeyMapping(
+        KeyMapping.Category clickGuardKeybindCategory = new KeyMapping.Category(Identifier.fromNamespaceAndPath("clickguard", "clickguard"));
+        openPresetsScreen = KeyMappingHelper.registerKeyMapping(new KeyMapping(
                 "key.clickguard.openPresetsScreen",
                 InputConstants.Type.KEYSYM,
                 GLFW.GLFW_KEY_COMMA,
-                SavedcommandsKeyindCategory
+                clickGuardKeybindCategory
         ));
         ClientTickEvents.END_CLIENT_TICK.register(client -> {
-            while (openCommandScreen.consumeClick()) {
+            while (openPresetsScreen.consumeClick()) {
                 client.execute(() -> {
                     if (client.gui.screen() == null) {
                         client.gui.setScreen(new PresetsScreen());
@@ -46,7 +50,7 @@ public class ClickGuardClient implements ClientModInitializer {
                 "key.clickguard.toggleClicking",
                 InputConstants.Type.KEYSYM,
                 GLFW.GLFW_KEY_PERIOD,
-                SavedcommandsKeyindCategory
+                clickGuardKeybindCategory
         ));
         ClientTickEvents.END_CLIENT_TICK.register(client -> {
             while (enableClickingKey.consumeClick()) {
@@ -65,6 +69,12 @@ public class ClickGuardClient implements ClientModInitializer {
                 }
             }
         });
+
+        HudElementRegistry.attachElementBefore(
+                VanillaHudElements.CHAT,
+                id("autoclicker_hud"),
+                HUD::renderClickerHud
+        );
 
         configManager = new ConfigManager();
     }

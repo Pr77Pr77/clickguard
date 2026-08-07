@@ -44,6 +44,9 @@ public class ConfigManager {
             public int customIntervalMS = 100; // 100 = 10 CPS
             public int holdingDurationMS = 40;
 
+            public boolean filterEntities = false;
+            public boolean filterBlocks = false;
+
             public boolean enabled = false;
         }
 

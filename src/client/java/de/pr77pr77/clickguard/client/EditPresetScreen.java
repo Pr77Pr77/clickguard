@@ -69,6 +69,7 @@ public class EditPresetScreen extends Screen {
         list.addButon(Component.translatable("clickguard.keybind.label", Component.translatable(preset.keybind.getName())),
                 _ -> minecraft.gui.setScreen(new ChooseKeybindScreen(this, preset)));
         list.addClickingTypeEntry(preset);
+        list.addFilterEntry(preset);
     }
 
     @Override
@@ -115,6 +116,10 @@ public class EditPresetScreen extends Screen {
 
         public void addClickingTypeEntry(ConfigManager.ConfigData.Preset preset) {
             addEntry(new ClickingTypeEntry(minecraft, preset), 2 + 20 + 5 + 10 + 20 + 5 + 10 + 20 + 5 + 10 + 20 + 6);
+        }
+
+        public void addFilterEntry(ConfigManager.ConfigData.Preset preset) {
+            addEntry(new FilterEntry(minecraft, preset), 55);
         }
 
         @Override
@@ -287,7 +292,7 @@ public class EditPresetScreen extends Screen {
 
             @Override
             void init() {
-                editBox.setPosition(getContentX() + 2, getContentY());
+                editBox.setPosition(getContentX() + 2, getContentY() + 2 + minecraft.font.lineHeight + 2);
                 editBox.setSize(getContentWidth() - 4, 20);
                 if (!initialized) {
                     editBox.setValue(initialValue);
@@ -576,6 +581,59 @@ public class EditPresetScreen extends Screen {
             @Override
             public @NonNull List<? extends NarratableEntry> narratables() {
                 return List.of(typeButton, cpsEditBox, intervalEditBox, durationEditBox);
+            }
+        }
+
+        public static class FilterEntry extends Entry {
+            public final Checkbox checkboxEntities;
+            public final Checkbox checkboxBlocks;
+            private final Minecraft minecraft;
+
+            public FilterEntry(Minecraft minecraft, ConfigManager.ConfigData.Preset preset) { // Sets the value to preset
+                this.minecraft = minecraft;
+                checkboxEntities = Checkbox.builder(Component.translatable("clickguard.filter.entities"), minecraft.font)
+                        .selected(preset.filterEntities).onValueChange((_, value) -> preset.filterEntities = value).build();
+                checkboxBlocks = Checkbox.builder(Component.translatable("clickguard.filter.blocks"), minecraft.font)
+                        .selected(preset.filterBlocks).onValueChange((_, value) -> preset.filterBlocks = value).build();
+            }
+
+            @Override
+            void init() {
+                checkboxEntities.setPosition(getContentX() + 2, getContentY() + 2 + minecraft.font.lineHeight + 2);
+                checkboxEntities.setWidth(getContentWidth() - 4);
+                checkboxBlocks.setPosition(getContentX() + 2, checkboxEntities.getBottom() + 2);
+                checkboxBlocks.setWidth(getContentWidth() - 4);
+            }
+
+            @Override
+            public void extractContent(@NonNull GuiGraphicsExtractor graphics, int mouseX, int mouseY, boolean hovered, float a) {
+                graphics.fill(getContentX(), getContentY(), getContentX() + getContentWidth(), getContentY() + getContentHeight(), 0x44000000);
+                graphics.text(
+                        minecraft.font,
+                        Component.translatable("clickguard.filter.title"),
+                        getContentX() + 2,
+                        getContentY() + 2,
+                        0xFFFFFFFF,
+                        true
+                );
+
+                checkboxEntities.setY(getContentY() + 2 + minecraft.font.lineHeight + 2);
+                checkboxEntities.setWidth(getContentWidth() - 4);
+                checkboxEntities.extractContents(graphics, mouseX, mouseY, a);
+
+                checkboxBlocks.setY(checkboxEntities.getBottom() + 2);
+                checkboxBlocks.setWidth(getContentWidth() - 4);
+                checkboxBlocks.extractContents(graphics, mouseX, mouseY, a);
+            }
+
+            @Override
+            public @NonNull List<? extends GuiEventListener> children() {
+                return List.of(checkboxEntities, checkboxBlocks);
+            }
+
+            @Override
+            public @NonNull List<? extends NarratableEntry> narratables() {
+                return List.of(checkboxEntities, checkboxBlocks);
             }
         }
     }

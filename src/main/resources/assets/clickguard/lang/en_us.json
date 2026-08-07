@@ -27,5 +27,8 @@
   "clickguard.timing.interval": "Interval between clicks (minutes:seconds.milliseconds)",
   "clickguard.timing.CPS": "Clicks per second (CPS)",
   "clickguard.timing.duration": "Click duration (milliseconds)",
-  "clickguard.timing.noCustomTiming": "Timings can only be set with type 'Custom timing'"
+  "clickguard.timing.noCustomTiming": "Timings can only be set with type 'Custom timing'",
+  "clickguard.filter.title": "Only click",
+  "clickguard.filter.entities": "Entities",
+  "clickguard.filter.blocks": "Blocks"
 }

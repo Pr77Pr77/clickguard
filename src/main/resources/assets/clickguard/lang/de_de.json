@@ -25,7 +25,10 @@
   "clickguard.type.cooldownAware": "An Cooldown angepasst",
   "clickguard.type.customTiming": "Benutzerdefinierte Zeiten",
   "clickguard.timing.interval": "Intervall zwischen Klicks (Minuten:Sekunden.Millisekunden)",
-  "clickguard.timing.CPS": "Klicks pro sekunde (CPS)",
+  "clickguard.timing.CPS": "Klicks pro Sekunde (CPS)",
   "clickguard.timing.duration": "Klickdauer (Millisekunden)",
-  "clickguard.timing.noCustomTiming": "Zeiten können nur beim Typ 'Benutzerdefinierte Zeiten' gesetzt werden."
+  "clickguard.timing.noCustomTiming": "Zeiten können nur beim Typ 'Benutzerdefinierte Zeiten' gesetzt werden.",
+  "clickguard.filter.title": "Nur klicken bei",
+  "clickguard.filter.entities": "Entitäten",
+  "clickguard.filter.blocks": "Blöcken"
 }

@@ -30,5 +30,12 @@
   "clickguard.timing.noCustomTiming": "Zeiten können nur beim Typ 'Benutzerdefinierte Zeiten' gesetzt werden.",
   "clickguard.filter.title": "Nur klicken bei",
   "clickguard.filter.entities": "Entitäten",
-  "clickguard.filter.blocks": "Blöcken"
+  "clickguard.filter.blocks": "Blöcken",
+  "clickguard.filter.action.title": "Behandlung von Aktionen",
+  "clickguard.filter.action.playerDamaged": "Wenn der Spieler Schaden nimmt:",
+  "clickguard.filter.action.playerDamaged.notfication.title": "ClickGuard: Du hast Schaden genommen!",
+  "clickguard.filter.action.playerDamaged.notfication.message": "Du hast in Minecraft Schaden genommen während die Autoklicker-Mod ClickGuard aktiviert war.",
+  "clickguard.filter.action.option.leave": "Welt Verlassen",
+  "clickguard.filter.action.option.notification": "Benachrichtigung",
+  "clickguard.filter.action.option.stopClicker": "Autoklicker stoppen"
 }

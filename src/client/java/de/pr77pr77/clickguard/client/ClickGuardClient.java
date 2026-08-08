@@ -9,7 +9,12 @@ import net.fabricmc.fabric.api.client.rendering.v1.hud.VanillaHudElements;
 import net.fabricmc.fabric.api.client.rendering.v1.level.LevelRenderEvents;
 import net.minecraft.client.KeyMapping;
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.gui.narration.NarratableEntry;
+import net.minecraft.client.gui.narration.NarratedElementType;
+import net.minecraft.client.gui.narration.NarrationElementOutput;
+import net.minecraft.network.chat.Component;
 import net.minecraft.resources.Identifier;
+import org.jspecify.annotations.NonNull;
 import org.lwjgl.glfw.GLFW;
 
 import java.util.ArrayList;
@@ -99,5 +104,22 @@ public class ClickGuardClient implements ClientModInitializer {
             }
             clickers.clear();
         }
+    }
+
+    public static NarratableEntry NarratableEntryOfComponent(Component text) {
+        if (text == null) {
+            return null;
+        }
+        return new NarratableEntry() {
+            @Override
+            public NarratableEntry.@NonNull NarrationPriority narrationPriority() {
+                return NarrationPriority.HOVERED;
+            }
+
+            @Override
+            public void updateNarration(@NonNull NarrationElementOutput output) {
+                output.add(NarratedElementType.TITLE, text);
+            }
+        };
     }
 }

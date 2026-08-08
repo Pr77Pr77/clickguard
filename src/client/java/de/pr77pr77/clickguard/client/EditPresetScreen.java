@@ -21,6 +21,7 @@ import java.math.BigDecimal;
 import java.math.RoundingMode;
 
 import static de.pr77pr77.clickguard.ClickGuard.LOGGER;
+import static de.pr77pr77.clickguard.client.ClickGuardClient.NarratableEntryOfComponent;
 
 public class EditPresetScreen extends Screen {
     private final Screen parent;
@@ -70,6 +71,12 @@ public class EditPresetScreen extends Screen {
                 _ -> minecraft.gui.setScreen(new ChooseKeybindScreen(this, preset)));
         list.addClickingTypeEntry(preset);
         list.addFilterEntry(preset);
+
+        list.addTitleEntry(Component.translatable("clickguard.filter.action.title"));
+        if (preset.playerDamaged == null) {
+            preset.playerDamaged = new ConfigManager.ConfigData.SimpleAction();
+        }
+        list.addSimpleActionEntry(Component.translatable("clickguard.filter.action.playerDamaged"), preset.playerDamaged, true);
     }
 
     @Override
@@ -120,6 +127,14 @@ public class EditPresetScreen extends Screen {
 
         public void addFilterEntry(ConfigManager.ConfigData.Preset preset) {
             addEntry(new FilterEntry(minecraft, preset), 55);
+        }
+
+        public void addTitleEntry(Component label) {
+            addEntry(new TitleEntry(minecraft, label), 4 + minecraft.font.lineHeight);
+        }
+
+        public void addSimpleActionEntry(Component label, ConfigManager.ConfigData.SimpleAction action, boolean lastActionEntry) {
+            addEntry(new SimpleActionEntry(minecraft, label, action, lastActionEntry), 4 + minecraft.font.lineHeight + 19 + 4 + (lastActionEntry ? 2 : 0));
         }
 
         @Override
@@ -302,7 +317,7 @@ public class EditPresetScreen extends Screen {
 
             @Override
             public void extractContent(@NonNull GuiGraphicsExtractor graphics, int mouseX, int mouseY, boolean hovered, float a) {
-                graphics.fill(getContentX(), getContentY(), getContentX() + getContentWidth(), getContentY() + getContentHeight(), 0x44000000);
+                graphics.fill(getContentX(), getContentY(), getContentRight(), getContentBottom(), 0x44000000);
                 graphics.text(
                         minecraft.font,
                         label,
@@ -534,7 +549,7 @@ public class EditPresetScreen extends Screen {
 
             @Override
             public void extractContent(@NonNull GuiGraphicsExtractor graphics, int mouseX, int mouseY, boolean hovered, float a) {
-                graphics.fill(getContentX(), getContentY(), getContentX() + getContentWidth(), getContentY() + getContentHeight(), 0x44000000);
+                graphics.fill(getContentX(), getContentY(), getContentRight(), getContentBottom(), 0x44000000);
 
                 typeButton.setY(getContentY() + 2);
                 typeButton.extractRenderState(graphics, mouseX, mouseY, a);
@@ -607,7 +622,7 @@ public class EditPresetScreen extends Screen {
 
             @Override
             public void extractContent(@NonNull GuiGraphicsExtractor graphics, int mouseX, int mouseY, boolean hovered, float a) {
-                graphics.fill(getContentX(), getContentY(), getContentX() + getContentWidth(), getContentY() + getContentHeight(), 0x44000000);
+                graphics.fill(getContentX(), getContentY(), getContentRight(), getContentBottom(), 0x44000000);
                 graphics.text(
                         minecraft.font,
                         Component.translatable("clickguard.filter.title"),
@@ -633,7 +648,117 @@ public class EditPresetScreen extends Screen {
 
             @Override
             public @NonNull List<? extends NarratableEntry> narratables() {
-                return List.of(checkboxEntities, checkboxBlocks);
+                return List.of(NarratableEntryOfComponent(Component.translatable("clickguard.filter.title")), checkboxEntities, checkboxBlocks);
+            }
+        }
+
+        public static class TitleEntry extends Entry { // Connects at the bottom
+            private final Minecraft minecraft;
+            public final Component label;
+
+            TitleEntry(Minecraft minecraft, Component label) {
+                this.minecraft = minecraft;
+                this.label = label;
+            }
+
+            @Override
+            void init() {
+            }
+
+            @Override
+            public void extractContent(GuiGraphicsExtractor graphics, int mouseX, int mouseY, boolean hovered, float a) {
+                graphics.fill(getContentX(), getContentY(), getContentRight(), getY() + getHeight(), 0x44000000);
+                graphics.text(
+                        minecraft.font,
+                        label,
+                        getContentX() + 2,
+                        getContentY() + 2,
+                        0xFFFFFFFF,
+                        true
+                );
+            }
+
+            @Override
+            public @NonNull List<? extends GuiEventListener> children() {
+                return List.of();
+            }
+
+            @Override
+            public @NonNull List<? extends NarratableEntry> narratables() {
+                return List.of(NarratableEntryOfComponent(label));
+            }
+        }
+
+        public static class SimpleActionEntry extends Entry {
+            public final Checkbox checkboxStopClicker;
+            public final Checkbox checkboxNotification;
+            public final Checkbox checkboxLeave;
+
+            public final Component label;
+
+            public final boolean lastActionEntry;
+
+            private final Minecraft minecraft;
+
+            public SimpleActionEntry(Minecraft minecraft, Component label, ConfigManager.ConfigData.SimpleAction action, boolean lastActionEntry) {
+                this.minecraft = minecraft;
+                checkboxStopClicker = Checkbox.builder(Component.translatable("clickguard.filter.action.option.stopClicker"), minecraft.font)
+                        .selected(action.stopClicker).onValueChange((_, value) -> action.stopClicker = value).build();
+                checkboxNotification = Checkbox.builder(Component.translatable("clickguard.filter.action.option.notification"), minecraft.font)
+                        .selected(action.notification).onValueChange((_, value) -> action.notification = value).build();
+                checkboxLeave = Checkbox.builder(Component.translatable("clickguard.filter.action.option.leave"), minecraft.font)
+                        .selected(action.leaveWorld).onValueChange((_, value) -> action.leaveWorld = value).build();
+                this.label = label;
+                this.lastActionEntry = lastActionEntry;
+            }
+
+            @Override
+            void init() {
+                final int checkboxesY = getContentY() + 2 + minecraft.font.lineHeight + 2;
+                final int checkboxesWidth = (getContentWidth() - 12) / 3;
+                checkboxStopClicker.setPosition(getContentX() + 4, checkboxesY);
+                checkboxStopClicker.setWidth(checkboxesWidth);
+                checkboxNotification.setPosition(getContentX() + 4 + checkboxesWidth + 2, checkboxesY);
+                checkboxNotification.setWidth(checkboxesWidth);
+                checkboxLeave.setPosition(getContentX() + 4 + (checkboxesWidth + 2) * 2, checkboxesY);
+                checkboxLeave.setWidth(checkboxesWidth);
+            }
+
+            @Override
+            public void extractContent(@NonNull GuiGraphicsExtractor graphics, int mouseX, int mouseY, boolean hovered, float a) {
+                // General box, together with other
+                graphics.fill(getContentX(), getY(), getContentRight(), lastActionEntry ? getContentBottom() : getY() + getHeight(), 0x44000000);
+                // Own box:
+                graphics.fill(getContentX() + 2, lastActionEntry ? getContentBottom() : (getContentBottom() - 2), getContentRight() - 2, getContentBottom(), 0x44000000);
+                graphics.text(
+                        minecraft.font,
+                        label,
+                        getContentX() + 4,
+                        getContentY() + 2,
+                        0xFFFFFFFF,
+                        true
+                );
+
+                final int checkboxesY = getContentY() + 2 + minecraft.font.lineHeight + 2;
+
+                checkboxStopClicker.setY(checkboxesY);
+                checkboxStopClicker.extractContents(graphics, mouseX, mouseY, a);
+
+                checkboxNotification.setY(checkboxesY);
+                checkboxNotification.extractContents(graphics, mouseX, mouseY, a);
+
+                checkboxLeave.setY(checkboxesY);
+                checkboxLeave.extractContents(graphics, mouseX, mouseY, a);
+            }
+
+            @Override
+            public @NonNull List<? extends GuiEventListener> children() {
+                return List.of(checkboxStopClicker, checkboxNotification, checkboxLeave);
+            }
+
+            @Override
+            public @NonNull List<? extends NarratableEntry> narratables() {
+                return List.of(NarratableEntryOfComponent(label), checkboxStopClicker, checkboxNotification, checkboxLeave);
             }
         }
     }

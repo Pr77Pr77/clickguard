@@ -30,5 +30,12 @@
   "clickguard.timing.noCustomTiming": "Timings can only be set with type 'Custom timing'",
   "clickguard.filter.title": "Only click",
   "clickguard.filter.entities": "Entities",
-  "clickguard.filter.blocks": "Blocks"
+  "clickguard.filter.blocks": "Blocks",
+  "clickguard.filter.action.title": "Handling of actions",
+  "clickguard.filter.action.playerDamaged": "If the player takes damage:",
+  "clickguard.filter.action.playerDamaged.notfication.title": "ClickGuard: You got damaged!",
+  "clickguard.filter.action.playerDamaged.notfication.message": "You got damaged in Minecraft while the auto clicker mod ClickGuard for was enabled.",
+  "clickguard.filter.action.option.leave": "Leave world",
+  "clickguard.filter.action.option.notification": "Notification",
+  "clickguard.filter.action.option.stopClicker": "Stop auto clicker"
 }

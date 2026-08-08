@@ -4,7 +4,8 @@
 	"compatibilityLevel": "JAVA_25",
 	"client": [
 		"ExampleClientMixin",
-		"ManualClicksBlockingMixin"
+		"ManualClicksBlockingMixin",
+		"ClientPacketListenerDamageMixin"
 	],
 	"injectors": {
 		"defaultRequire": 1

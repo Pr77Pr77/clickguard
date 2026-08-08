@@ -47,6 +47,8 @@ public class ConfigManager {
             public boolean filterEntities = false;
             public boolean filterBlocks = false;
 
+            public SimpleAction playerDamaged = new SimpleAction();
+
             public boolean enabled = false;
         }
 
@@ -64,6 +66,12 @@ public class ConfigManager {
             public Component getComponent() {
                 return Component.translatable(translationKey);
             }
+        }
+
+        public static class SimpleAction {
+            public boolean stopClicker = false;
+            public boolean notification = false;
+            public boolean leaveWorld = false;
         }
     }
 

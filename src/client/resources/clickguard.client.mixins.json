@@ -3,7 +3,6 @@
 	"package": "de.pr77pr77.clickguard.client.mixin",
 	"compatibilityLevel": "JAVA_25",
 	"client": [
-		"ExampleClientMixin",
 		"ManualClicksBlockingMixin",
 		"ClientPacketListenerDamageMixin"
 	],

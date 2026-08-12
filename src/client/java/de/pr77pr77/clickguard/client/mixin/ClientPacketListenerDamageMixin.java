@@ -1,5 +1,6 @@
 package de.pr77pr77.clickguard.client.mixin;
 
+import de.pr77pr77.clickguard.client.ClickGuardClient;
 import de.pr77pr77.clickguard.client.Clicker;
 import de.pr77pr77.clickguard.client.SystemNotifier;
 import net.minecraft.client.Minecraft;
@@ -20,20 +21,21 @@ public class ClientPacketListenerDamageMixin {
 
     @Inject(method = "handleDamageEvent(Lnet/minecraft/network/protocol/game/ClientboundDamageEventPacket;)V", at = @At("HEAD"))
     private void clickguard$onDamageEvent(ClientboundDamageEventPacket packet, CallbackInfo ci) {
-        if(Minecraft.getInstance().level == null){
+        if (Minecraft.getInstance().level == null) {
             return;
         }
 
         Entity entity = Minecraft.getInstance().level.getEntity(packet.entityId());
 
-        if (autoClickingEnabled && entity == Minecraft.getInstance().player) {
+        if ((autoClickingEnabled || autoStoppedInfo != null) && entity == Minecraft.getInstance().player) {
             Minecraft.getInstance().execute(() -> {
                 boolean notificationSent = false; // Prevent sending notifications multiple times
-                boolean clickerDisablingScheduled = false; // Prevent sending notifications multiple times
                 for (Clicker clicker : clickers) {
-                    if (!clickerDisablingScheduled && clicker.preset.playerDamaged.stopClicker) {
-                        clickerDisablingScheduled = true;
+                    if (clicker.preset.playerDamaged.triggered) {
+                        return;
                     }
+                    clicker.preset.playerDamaged.triggered = true;
+
                     if (!notificationSent && clicker.preset.playerDamaged.notification) {
                         SystemNotifier.notify(Component.translatable("clickguard.filter.action.playerDamaged.notfication.title").getString(),
                                 Component.translatable("clickguard.filter.action.playerDamaged.notfication.message").getString());
@@ -42,12 +44,14 @@ public class ClientPacketListenerDamageMixin {
                     if (Minecraft.getInstance().level != null && clicker.preset.playerDamaged.leaveWorld) {
                         Minecraft.getInstance().disconnect(new TitleScreen(), false);
                     }
-
-                    if (clickerDisablingScheduled && notificationSent && Minecraft.getInstance().level == null) {
-                        break; // No need to check the other clickers, everything is already done.
+                    if (clicker.preset.playerDamaged.stopClicker && autoStoppedInfo == null) {
+                        autoStoppedInfo = new ClickGuardClient.AutoStoppedInfo(clicker.preset, Component.translatable("clickguard.filter.action.playerDamaged.hud", clicker.preset.name));
+                        if (notificationSent && Minecraft.getInstance().level == null) {
+                            break;
+                        }
                     }
                 }
-                if (clickerDisablingScheduled && autoClickingEnabled) {
+                if (autoStoppedInfo != null && autoClickingEnabled) {
                     toggleAutoClickingEnabled();
                 }
             });

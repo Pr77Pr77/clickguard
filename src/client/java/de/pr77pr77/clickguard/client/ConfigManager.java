@@ -33,10 +33,10 @@ public class ConfigManager {
         ClientLifecycleEvents.CLIENT_STARTED.register(_ -> load());
     }
 
-    public class ConfigData {
+    public static class ConfigData {
         List<Preset> presets = new ArrayList<>();
 
-        public class Preset {
+        public static class Preset {
             public String name = "";
             public KeyMapping keybind;
 
@@ -48,6 +48,9 @@ public class ConfigManager {
             public boolean filterBlocks = false;
 
             public SimpleAction playerDamaged = new SimpleAction();
+
+            public List<SliderAction> healthActions = new ArrayList<>();
+            public List<SliderAction> hungerActions = new ArrayList<>();
 
             public boolean enabled = false;
         }
@@ -72,6 +75,16 @@ public class ConfigManager {
             public boolean stopClicker = false;
             public boolean notification = false;
             public boolean leaveWorld = false;
+
+            public transient boolean triggered = false; // If an action is triggered on start, it will be ignored.
+        }
+
+        public static class SliderAction extends SimpleAction {
+            public int points = 0;
+
+            public boolean isObsolete() {
+                return !stopClicker && !notification && !leaveWorld;
+            }
         }
     }
 

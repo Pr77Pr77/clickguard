@@ -12,7 +12,7 @@ import static de.pr77pr77.clickguard.client.ClickGuardClient.*;
 
 public class HUD {
     public static void renderClickerHud(GuiGraphicsExtractor graphics, DeltaTracker tickCounter) {
-        if (!autoClickingEnabled) {
+        if (!autoClickingEnabled && autoStoppedInfo == null) {
             return;
         }
 
@@ -20,6 +20,17 @@ public class HUD {
         int x = 5;
         int y = 5;
         int lineHeight = 10;
+
+        if (autoStoppedInfo != null) {
+            // Render auto stopped info:
+            graphics.text(font, Component.translatable("clickguard.filter.action.hudStopped.title"), x, y, CommonColors.SOFT_YELLOW);
+            y += lineHeight;
+            graphics.text(font, autoStoppedInfo.reasonMessage, x, y, CommonColors.SOFT_YELLOW);
+            y += lineHeight;
+            graphics.text(font, Component.translatable("clickguard.filter.action.hudStopped.subtitle", enableClickingKey.getTranslatedKeyMessage()), x, y, CommonColors.TEXT_GRAY);
+            return;
+        }
+
 
         graphics.text(font, Component.translatable("clickguard.hud.title"), x, y, CommonColors.TEXT_GRAY);
         y += lineHeight;

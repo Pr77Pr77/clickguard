@@ -4,6 +4,7 @@ import com.mojang.blaze3d.platform.InputConstants;
 import net.fabricmc.api.ClientModInitializer;
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents;
 import net.fabricmc.fabric.api.client.keymapping.v1.KeyMappingHelper;
+import net.fabricmc.fabric.api.client.networking.v1.ClientPlayConnectionEvents;
 import net.fabricmc.fabric.api.client.rendering.v1.hud.HudElementRegistry;
 import net.fabricmc.fabric.api.client.rendering.v1.hud.VanillaHudElements;
 import net.fabricmc.fabric.api.client.rendering.v1.level.LevelRenderEvents;
@@ -12,6 +13,7 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.narration.NarratableEntry;
 import net.minecraft.client.gui.narration.NarratedElementType;
 import net.minecraft.client.gui.narration.NarrationElementOutput;
+import net.minecraft.client.gui.screens.TitleScreen;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.Identifier;
 import org.jspecify.annotations.NonNull;
@@ -27,6 +29,8 @@ public class ClickGuardClient implements ClientModInitializer {
     public static KeyMapping enableClickingKey;
 
     public static boolean autoClickingEnabled;
+    protected static boolean pendingDisconnect = false;
+    public static AutoStoppedInfo autoStoppedInfo;
 
     public static ConfigManager configManager;
 
@@ -68,11 +72,39 @@ public class ClickGuardClient implements ClientModInitializer {
         });
 
         LevelRenderEvents.START_MAIN.register(_ -> {
-            if (autoClickingEnabled) {
+            if (autoClickingEnabled || autoStoppedInfo != null) {
                 for (Clicker clicker : clickers) {
-                    clicker.handleAutomaticClicks();
+                    if (autoClickingEnabled) {
+                        clicker.handleAutomaticClicks();
+                    }
+
+                    AutoStoppedInfo info = clicker.checkActions();
+                    if (info != null && autoStoppedInfo == null) {
+                        autoStoppedInfo = info;
+                        break;
+                    }
+                }
+                if (autoStoppedInfo != null && autoClickingEnabled) {
+                    toggleAutoClickingEnabled();
                 }
             }
+        });
+
+        ClientTickEvents.START_CLIENT_TICK.register(client -> {
+            if (pendingDisconnect) {
+                pendingDisconnect = false;
+                client.disconnect(new TitleScreen(), false);
+            }
+        });
+
+        ClientPlayConnectionEvents.DISCONNECT.register((_, _) -> {
+            // Reset the auto clickers after disconnect.
+            autoClickingEnabled = false;
+            for (Clicker clicker : clickers) {
+                clicker.releaseClickIfClicking();
+            }
+            autoStoppedInfo = null;
+            clickers.clear();
         });
 
         HudElementRegistry.attachElementBefore(
@@ -92,6 +124,7 @@ public class ClickGuardClient implements ClientModInitializer {
         }
 
         if (autoClickingEnabled) {
+            autoStoppedInfo = null;
             clickers.clear();
             for (ConfigManager.ConfigData.Preset preset : configManager.data.presets) {
                 if (preset.enabled) {
@@ -102,7 +135,19 @@ public class ClickGuardClient implements ClientModInitializer {
             for (Clicker clicker : clickers) {
                 clicker.releaseClickIfClicking();
             }
-            clickers.clear();
+            if (autoStoppedInfo == null) {
+                clickers.clear();
+            }
+        }
+    }
+
+    public static class AutoStoppedInfo {
+        final ConfigManager.ConfigData.Preset causingPreset;
+        final Component reasonMessage;
+
+        public AutoStoppedInfo(ConfigManager.ConfigData.Preset causingPreset, Component reasonMessage) {
+            this.causingPreset = causingPreset;
+            this.reasonMessage = reasonMessage;
         }
     }
 

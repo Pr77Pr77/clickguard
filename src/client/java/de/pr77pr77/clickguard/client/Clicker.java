@@ -1,9 +1,14 @@
 package de.pr77pr77.clickguard.client;
 
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.player.LocalPlayer;
+import net.minecraft.network.chat.Component;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.EntityHitResult;
 import net.minecraft.world.phys.HitResult;
+import org.jspecify.annotations.Nullable;
+
+import java.util.stream.Stream;
 
 import static de.pr77pr77.clickguard.client.ClickGuardClient.autoClickingEnabled;
 
@@ -16,9 +21,18 @@ public class Clicker {
 
     public Clicker(ConfigManager.ConfigData.Preset preset) {
         this.preset = preset;
+
+        // Check every health and hunger action to prevent triggering on startup
+        LocalPlayer player = Minecraft.getInstance().player;
+        if (player != null) {
+            Stream.concat(preset.healthActions.stream(), preset.hungerActions.stream())
+                    .forEach(action -> action.triggered = player.getHealth() <= action.points);
+        }
+
+        preset.playerDamaged.triggered = false;
     }
 
-    public void handleAutomaticClicks() {
+    public void handleAutomaticClicks() { // Returns weather the clicker should be stopped
         if (!preset.enabled || !autoClickingEnabled) {
             return;
         }
@@ -66,6 +80,36 @@ public class Clicker {
         }
     }
 
+    public ClickGuardClient.@Nullable AutoStoppedInfo checkActions() {
+        // Check health and hunger actions:
+        LocalPlayer player = Minecraft.getInstance().player;
+        if (player != null) {
+            for (ConfigManager.ConfigData.SliderAction action : preset.healthActions) {
+                if (player.getHealth() <= action.points && !action.triggered) {
+                    action.triggered = true;
+                    if (triggerSliderAction(action, "clickguard.filter.action.health.notfication", (int) player.getHealth())) {
+                        return new ClickGuardClient.AutoStoppedInfo(preset, Component.translatable("clickguard.filter.action.health.hud", preset.name, action.points));
+                    }
+                } else if (player.getHealth() > action.points && action.triggered) {
+                    action.triggered = false;
+                    // Enable the action after going above the threshold.
+                }
+            }
+            for (ConfigManager.ConfigData.SliderAction action : preset.hungerActions) {
+                if (player.getFoodData().getFoodLevel() <= action.points && !action.triggered) {
+                    action.triggered = true;
+                    if (triggerSliderAction(action, "clickguard.filter.action.hunger.notfication", player.getFoodData().getFoodLevel())) {
+                        return new ClickGuardClient.AutoStoppedInfo(preset, Component.translatable("clickguard.filter.action.hunger.hud", preset.name, action.points));
+                    }
+                } else if (player.getFoodData().getFoodLevel() > action.points && action.triggered) {
+                    action.triggered = false;
+                    // Enable the action after going above the threshold.
+                }
+            }
+        }
+        return null;
+    }
+
     private void startClick() {
         // Check filters:
         if (preset.filterBlocks || preset.filterEntities) {
@@ -89,5 +133,16 @@ public class Clicker {
     private void releaseClick() {
         preset.keybind.setDown(false);
         clicking = false;
+    }
+
+    boolean triggerSliderAction(ConfigManager.ConfigData.SliderAction action, final String notificationBaseKey, int pointsLeft) { // notificationBaseKey: e.g. "clickguard.filter.action.health.notfication"
+        if (action.notification) {
+            SystemNotifier.notify(Component.translatable(notificationBaseKey + ".title", pointsLeft).getString(),
+                    Component.translatable(notificationBaseKey + ".message", action.points).getString());
+        }
+        if (Minecraft.getInstance().level != null && !ClickGuardClient.pendingDisconnect && action.leaveWorld) {
+            ClickGuardClient.pendingDisconnect = true;
+        }
+        return action.stopClicker;
     }
 }

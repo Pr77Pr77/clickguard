@@ -10,17 +10,21 @@ import net.minecraft.client.gui.narration.NarratableEntry;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.network.chat.CommonComponents;
 import net.minecraft.network.chat.Component;
+import net.minecraft.resources.Identifier;
 import net.minecraft.util.CommonColors;
 import org.jspecify.annotations.NonNull;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Arrays;
 import java.util.Optional;
+import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 
 import static de.pr77pr77.clickguard.ClickGuard.LOGGER;
+import static de.pr77pr77.clickguard.ClickGuard.id;
 import static de.pr77pr77.clickguard.client.ClickGuardClient.NarratableEntryOfComponent;
 
 public class EditPresetScreen extends Screen {
@@ -39,7 +43,7 @@ public class EditPresetScreen extends Screen {
     public EditPresetScreen(Screen parent, KeyMapping key) {
         super(Component.translatable("clickguard.presets.new"));
         this.parent = parent;
-        this.preset = ClickGuardClient.configManager.data.new Preset();
+        this.preset = new ConfigManager.ConfigData.Preset();
         this.preset.keybind = key;
         ClickGuardClient.configManager.data.presets.add(this.preset);
     }
@@ -68,7 +72,7 @@ public class EditPresetScreen extends Screen {
                     }
                 });
         list.addButon(Component.translatable("clickguard.keybind.label", Component.translatable(preset.keybind.getName())),
-                _ -> minecraft.gui.setScreen(new ChooseKeybindScreen(this, preset)));
+                (_, _) -> minecraft.gui.setScreen(new ChooseKeybindScreen(this, preset)));
         list.addClickingTypeEntry(preset);
         list.addFilterEntry(preset);
 
@@ -76,7 +80,36 @@ public class EditPresetScreen extends Screen {
         if (preset.playerDamaged == null) {
             preset.playerDamaged = new ConfigManager.ConfigData.SimpleAction();
         }
-        list.addSimpleActionEntry(Component.translatable("clickguard.filter.action.playerDamaged"), preset.playerDamaged, true);
+        list.addSimpleActionEntry(Component.translatable("clickguard.filter.action.playerDamaged"), preset.playerDamaged, false);
+
+        if (preset.healthActions == null) {
+            preset.healthActions = new ArrayList<>();
+        }
+        list.addInnerButon(Component.translatable("clickguard.filter.action.health.addButton"), (_, buttonEntry) -> {
+            ConfigManager.ConfigData.SliderAction healthAction = new ConfigManager.ConfigData.SliderAction();
+            preset.healthActions.add(healthAction);
+            list.insertIconSliderActionEntry(healthAction, false,
+                    OptionsList.IconSliderActionEntry.Type.HEALTH, list.children().indexOf(buttonEntry) + 1);
+        }, false);
+        for (ConfigManager.ConfigData.SliderAction healthAction : preset.healthActions) {
+            list.addIconSliderActionEntry(healthAction, false, OptionsList.IconSliderActionEntry.Type.HEALTH);
+        }
+
+        if (preset.hungerActions == null) {
+            preset.hungerActions = new ArrayList<>();
+        }
+        list.addInnerButon(Component.translatable("clickguard.filter.action.hunger.addButton"), (_, buttonEntry) -> {
+            ConfigManager.ConfigData.SliderAction hungerAction = new ConfigManager.ConfigData.SliderAction();
+            preset.hungerActions.add(hungerAction);
+            list.insertIconSliderActionEntry(hungerAction,
+                    list.children().indexOf(buttonEntry) + 1 == list.children().size(),
+                    OptionsList.IconSliderActionEntry.Type.HUNGER, list.children().indexOf(buttonEntry) + 1);
+            buttonEntry.lastBoxEntry = false; // When an entry was added below, the button can't be the last entry.
+        }, preset.hungerActions.isEmpty());
+        for (int i = 0; i < preset.hungerActions.size(); i++) {
+            list.addIconSliderActionEntry(preset.hungerActions.get(i), i == preset.hungerActions.size() - 1,
+                    OptionsList.IconSliderActionEntry.Type.HUNGER);
+        }
     }
 
     @Override
@@ -103,6 +136,10 @@ public class EditPresetScreen extends Screen {
 
     @Override
     public void onClose() {
+        // Remove obsolete slider actions:
+        preset.healthActions.removeIf(ConfigManager.ConfigData.SliderAction::isObsolete);
+        preset.hungerActions.removeIf(ConfigManager.ConfigData.SliderAction::isObsolete);
+
         ClickGuardClient.configManager.save();
         minecraft.gui.setScreen(parent);
     }
@@ -110,10 +147,10 @@ public class EditPresetScreen extends Screen {
     public static class OptionsList extends ContainerObjectSelectionList<OptionsList.Entry> {
 
         public OptionsList(Minecraft minecraft, int width, HeaderAndFooterLayout layout) {
-            super(minecraft, width, layout.getContentHeight(), layout.getHeaderHeight(), 20 + 8);
+            super(minecraft, width, layout.getContentHeight(), layout.getHeaderHeight(), 20 + 4);
         }
 
-        public void addButon(Component description, Button.OnPress onPress) {
+        public void addButon(Component description, BiConsumer<Button, ButtonEntry> onPress) {
             addEntry(new ButtonEntry(description, onPress));
         }
 
@@ -134,7 +171,38 @@ public class EditPresetScreen extends Screen {
         }
 
         public void addSimpleActionEntry(Component label, ConfigManager.ConfigData.SimpleAction action, boolean lastActionEntry) {
-            addEntry(new SimpleActionEntry(minecraft, label, action, lastActionEntry), 4 + minecraft.font.lineHeight + 19 + 4 + (lastActionEntry ? 2 : 0));
+            addEntry(new SimpleActionEntry(minecraft, label, action, lastActionEntry), 4 + minecraft.font.lineHeight + 2 + 19 + (lastActionEntry ? 4 : 2));
+        }
+
+        public void addIconSliderActionEntry(ConfigManager.ConfigData.SliderAction action, boolean lastActionEntry, IconSliderActionEntry.Type type) {
+            IconSliderActionEntry entry = new IconSliderActionEntry(minecraft, action, lastActionEntry, type);
+            addEntry(entry, entry.idealHeight);
+        }
+
+        public void insertIconSliderActionEntry(ConfigManager.ConfigData.SliderAction action, boolean lastActionEntry, IconSliderActionEntry.Type type, int index) {
+            IconSliderActionEntry entry = new IconSliderActionEntry(minecraft, action, lastActionEntry, type);
+            insertEntry(index, entry, entry.idealHeight);
+            entry.init();
+            scrollToEntry(entry);
+        }
+
+        public void addInnerButon(Component description, BiConsumer<Button, ButtonEntry> onPress, boolean lastBoxEntry) {
+            addEntry(new ButtonEntry(description, onPress, true, lastBoxEntry), 20 + (lastBoxEntry ? 6 : 4));
+        }
+
+        protected void insertEntry(int index, Entry newEntry, int height) {
+            List<Entry> displaced = new ArrayList<>();
+
+            for (int i = index; i < children().size(); i++) {
+                displaced.add(children().get(i));
+            }
+            removeEntries(displaced);
+
+            addEntry(newEntry, height);
+
+            for (Entry entry : displaced) {
+                addEntry(entry, entry.getHeight());
+            }
         }
 
         @Override
@@ -261,19 +329,30 @@ public class EditPresetScreen extends Screen {
 
         public static class ButtonEntry extends Entry {
             private final Button button;
+            private boolean innerButton = false; // Button in a box
+            private boolean lastBoxEntry = false;
 
-            private ButtonEntry(Component description, Button.OnPress onPress) {
-                button = Button.builder(description, onPress).build(); // Position and size set in init
+            private ButtonEntry(Component description, BiConsumer<Button, ButtonEntry> onPress) {
+                button = Button.builder(description, button -> onPress.accept(button, this)).build(); // Position and size set in init
+            }
+
+            private ButtonEntry(Component description, BiConsumer<Button, ButtonEntry> onPress, boolean innerButton, boolean lastBoxEntry) {
+                this(description, onPress);
+                this.innerButton = innerButton;
+                this.lastBoxEntry = lastBoxEntry;
             }
 
             @Override
             void init() {
-                button.setPosition(getContentX() + 2, getContentY() + 2);
-                button.setSize(getContentWidth() - 4, getContentHeight() - 4);
+                button.setPosition(getContentX() + (innerButton ? 2 : 0), getContentY());
+                button.setSize(getContentWidth() - (innerButton ? 4 : 0), getContentHeight() - ((innerButton && lastBoxEntry) ? 2 : 0));
             }
 
             @Override
             public void extractContent(@NonNull GuiGraphicsExtractor graphics, int mouseX, int mouseY, boolean hovered, float a) {
+                if (innerButton) {
+                    graphics.fill(getContentX(), getY(), getContentRight(), lastBoxEntry ? getContentBottom() : getY() + getHeight(), 0x44000000);
+                }
                 button.setY(getContentY());
                 button.extractRenderState(graphics, mouseX, mouseY, a);
             }
@@ -729,7 +808,7 @@ public class EditPresetScreen extends Screen {
                 // General box, together with other
                 graphics.fill(getContentX(), getY(), getContentRight(), lastActionEntry ? getContentBottom() : getY() + getHeight(), 0x44000000);
                 // Own box:
-                graphics.fill(getContentX() + 2, lastActionEntry ? getContentBottom() : (getContentBottom() - 2), getContentRight() - 2, getContentBottom(), 0x44000000);
+                graphics.fill(getContentX() + 2, getY() + 2, getContentRight() - 2, lastActionEntry ? (getContentBottom() - 2) : getContentBottom(), 0x44000000);
                 graphics.text(
                         minecraft.font,
                         label,
@@ -759,6 +838,114 @@ public class EditPresetScreen extends Screen {
             @Override
             public @NonNull List<? extends NarratableEntry> narratables() {
                 return List.of(NarratableEntryOfComponent(label), checkboxStopClicker, checkboxNotification, checkboxLeave);
+            }
+        }
+
+        public static class IconSliderActionEntry extends Entry {
+            public final int idealHeight;
+            public final Checkbox checkboxStopClicker;
+            public final Checkbox checkboxNotification;
+            public final Checkbox checkboxLeave;
+
+            public final boolean lastActionEntry;
+
+            private final Minecraft minecraft;
+
+            final Type type;
+            IconSlider slider;
+
+            public enum Type {
+                HEALTH(new IconSlider.IconSprites(Identifier.withDefaultNamespace("hud/heart/full"),
+                        Identifier.withDefaultNamespace("hud/heart/container"),
+                        Identifier.withDefaultNamespace("hud/heart/half")),
+                        "clickguard.filter.action.health.slider",
+                        Component.translatable("clickguard.filter.action.health")),
+                HUNGER(new IconSlider.IconSprites(Identifier.withDefaultNamespace("hud/food_full"),
+                        Identifier.withDefaultNamespace("hud/food_empty"),
+                        id("hud/food_right_eaten")),
+                        "clickguard.filter.action.hunger.slider",
+                        Component.translatable("clickguard.filter.action.hunger"));
+
+                final IconSlider.IconSprites sprites;
+                final String sliderTranslationKey;
+                final Component label;
+
+                Type(IconSlider.IconSprites sprites, String sliderTranslationKey, Component label) {
+                    this.sprites = sprites;
+                    this.sliderTranslationKey = sliderTranslationKey;
+                    this.label = label;
+                }
+            }
+
+            public IconSliderActionEntry(Minecraft minecraft, ConfigManager.ConfigData.SliderAction action, boolean lastActionEntry,
+                                         Type type) {
+                this.minecraft = minecraft;
+                checkboxStopClicker = Checkbox.builder(Component.translatable("clickguard.filter.action.option.stopClicker"), minecraft.font)
+                        .selected(action.stopClicker).onValueChange((_, value) -> action.stopClicker = value).build();
+                checkboxNotification = Checkbox.builder(Component.translatable("clickguard.filter.action.option.notification"), minecraft.font)
+                        .selected(action.notification).onValueChange((_, value) -> action.notification = value).build();
+                checkboxLeave = Checkbox.builder(Component.translatable("clickguard.filter.action.option.leave"), minecraft.font)
+                        .selected(action.leaveWorld).onValueChange((_, value) -> action.leaveWorld = value).build();
+                this.type = type;
+                slider = new IconSlider(0, 0, type.sprites, 20,
+                        type.sliderTranslationKey, action.points, points -> action.points = points);
+                this.lastActionEntry = lastActionEntry;
+
+                idealHeight = 4 + minecraft.font.lineHeight + 2 + IconSlider.HEIGHT + 2 + 19 + (lastActionEntry ? 4 : 2);
+            }
+
+            @Override
+            void init() {
+                slider.setPosition(getContentX() + 4, getContentY() + 2 + minecraft.font.lineHeight + 2);
+
+                final int checkboxesY = getContentY() + 2 + minecraft.font.lineHeight + 2 + slider.getHeight() + 2;
+                final int checkboxesWidth = (getContentWidth() - 12) / 3;
+                checkboxStopClicker.setPosition(getContentX() + 4, checkboxesY);
+                checkboxStopClicker.setWidth(checkboxesWidth);
+                checkboxNotification.setPosition(getContentX() + 4 + checkboxesWidth + 2, checkboxesY);
+                checkboxNotification.setWidth(checkboxesWidth);
+                checkboxLeave.setPosition(getContentX() + 4 + (checkboxesWidth + 2) * 2, checkboxesY);
+                checkboxLeave.setWidth(checkboxesWidth);
+            }
+
+            @Override
+            public void extractContent(@NonNull GuiGraphicsExtractor graphics, int mouseX, int mouseY, boolean hovered, float a) {
+                // General box, together with other
+                graphics.fill(getContentX(), getY(), getContentRight(), lastActionEntry ? getContentBottom() : getY() + getHeight(), 0x44000000);
+                // Own box:
+                graphics.fill(getContentX() + 2, getY() + 2, getContentRight() - 2, lastActionEntry ? (getContentBottom() - 2) : getContentBottom(), 0x44000000);
+                graphics.text(
+                        minecraft.font,
+                        type.label,
+                        getContentX() + 4,
+                        getContentY() + 2,
+                        0xFFFFFFFF,
+                        true
+                );
+
+                slider.setY(getContentY() + 2 + minecraft.font.lineHeight + 2);
+                slider.extractRenderState(graphics, mouseX, mouseY, a);
+
+                final int checkboxesY = getContentY() + 2 + minecraft.font.lineHeight + 2 + slider.getHeight() + 2;
+
+                checkboxStopClicker.setY(checkboxesY);
+                checkboxStopClicker.extractContents(graphics, mouseX, mouseY, a);
+
+                checkboxNotification.setY(checkboxesY);
+                checkboxNotification.extractContents(graphics, mouseX, mouseY, a);
+
+                checkboxLeave.setY(checkboxesY);
+                checkboxLeave.extractContents(graphics, mouseX, mouseY, a);
+            }
+
+            @Override
+            public @NonNull List<? extends GuiEventListener> children() {
+                return List.of(slider, checkboxStopClicker, checkboxNotification, checkboxLeave);
+            }
+
+            @Override
+            public @NonNull List<? extends NarratableEntry> narratables() {
+                return List.of(NarratableEntryOfComponent(type.label), slider, checkboxStopClicker, checkboxNotification, checkboxLeave);
             }
         }
     }

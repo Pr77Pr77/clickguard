@@ -13,7 +13,7 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.narration.NarratableEntry;
 import net.minecraft.client.gui.narration.NarratedElementType;
 import net.minecraft.client.gui.narration.NarrationElementOutput;
-import net.minecraft.client.gui.screens.TitleScreen;
+import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.Identifier;
 import org.jspecify.annotations.NonNull;
@@ -29,7 +29,7 @@ public class ClickGuardClient implements ClientModInitializer {
     public static KeyMapping enableClickingKey;
 
     public static boolean autoClickingEnabled;
-    protected static boolean pendingDisconnect = false;
+    public static AutoDisconnectInfo pendingDisconnect;
     public static AutoStoppedInfo autoStoppedInfo;
 
     public static ConfigManager configManager;
@@ -90,10 +90,15 @@ public class ClickGuardClient implements ClientModInitializer {
             }
         });
 
-        ClientTickEvents.START_CLIENT_TICK.register(client -> {
-            if (pendingDisconnect) {
-                pendingDisconnect = false;
-                client.disconnect(new TitleScreen(), false);
+        ClientTickEvents.START_CLIENT_TICK.register(minecraft -> {
+            if (pendingDisconnect != null) {
+                LocalPlayer player = Minecraft.getInstance().player;
+                if (player != null) {
+                    pendingDisconnect.health = player.getHealth();
+                    pendingDisconnect.hunger = player.getFoodData().getFoodLevel();
+                }
+                minecraft.disconnect(new AutoDisconnectScreen(pendingDisconnect), false);
+                pendingDisconnect = null;
             }
         });
 
@@ -138,6 +143,18 @@ public class ClickGuardClient implements ClientModInitializer {
             if (autoStoppedInfo == null) {
                 clickers.clear();
             }
+        }
+    }
+
+    public static class AutoDisconnectInfo {
+        final ConfigManager.ConfigData.Preset causingPreset;
+        final ConfigManager.ConfigData.SimpleAction causingAction;
+        float health;
+        int hunger;
+
+        public AutoDisconnectInfo(ConfigManager.ConfigData.Preset causingPreset, ConfigManager.ConfigData.SimpleAction causingAction) {
+            this.causingPreset = causingPreset;
+            this.causingAction = causingAction;
         }
     }
 

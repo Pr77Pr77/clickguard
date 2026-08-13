@@ -1,10 +1,7 @@
 package de.pr77pr77.clickguard.client.mixin;
 
-import de.pr77pr77.clickguard.client.ClickGuardClient;
-import de.pr77pr77.clickguard.client.Clicker;
-import de.pr77pr77.clickguard.client.SystemNotifier;
+import de.pr77pr77.clickguard.client.*;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.gui.screens.TitleScreen;
 import net.minecraft.client.multiplayer.ClientPacketListener;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.protocol.game.ClientboundDamageEventPacket;
@@ -42,7 +39,7 @@ public class ClientPacketListenerDamageMixin {
                         notificationSent = true;
                     }
                     if (Minecraft.getInstance().level != null && clicker.preset.playerDamaged.leaveWorld) {
-                        Minecraft.getInstance().disconnect(new TitleScreen(), false);
+                        pendingDisconnect = new AutoDisconnectInfo(clicker.preset, clicker.preset.playerDamaged);
                     }
                     if (clicker.preset.playerDamaged.stopClicker && autoStoppedInfo == null) {
                         autoStoppedInfo = new ClickGuardClient.AutoStoppedInfo(clicker.preset, Component.translatable("clickguard.filter.action.playerDamaged.hud", clicker.preset.name));

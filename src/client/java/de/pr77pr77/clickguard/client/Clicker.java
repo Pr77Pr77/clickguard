@@ -140,8 +140,8 @@ public class Clicker {
             SystemNotifier.notify(Component.translatable(notificationBaseKey + ".title", pointsLeft).getString(),
                     Component.translatable(notificationBaseKey + ".message", action.points).getString());
         }
-        if (Minecraft.getInstance().level != null && !ClickGuardClient.pendingDisconnect && action.leaveWorld) {
-            ClickGuardClient.pendingDisconnect = true;
+        if (Minecraft.getInstance().level != null && ClickGuardClient.pendingDisconnect == null && action.leaveWorld) {
+            ClickGuardClient.pendingDisconnect = new ClickGuardClient.AutoDisconnectInfo(preset, action);
         }
         return action.stopClicker;
     }

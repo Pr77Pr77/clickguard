@@ -23,11 +23,11 @@ public class HUD {
 
         if (autoStoppedInfo != null) {
             // Render auto stopped info:
-            graphics.text(font, Component.translatable("clickguard.filter.action.hudStopped.title"), x, y, CommonColors.SOFT_YELLOW);
+            graphics.text(font, Component.translatable("clickguard.action.hudStopped.title"), x, y, CommonColors.SOFT_YELLOW);
             y += lineHeight;
             graphics.text(font, autoStoppedInfo.reasonMessage, x, y, CommonColors.SOFT_YELLOW);
             y += lineHeight;
-            graphics.text(font, Component.translatable("clickguard.filter.action.hudStopped.subtitle", enableClickingKey.getTranslatedKeyMessage()), x, y, CommonColors.TEXT_GRAY);
+            graphics.text(font, Component.translatable("clickguard.action.hudStopped.subtitle", enableClickingKey.getTranslatedKeyMessage()), x, y, CommonColors.TEXT_GRAY);
             return;
         }
 

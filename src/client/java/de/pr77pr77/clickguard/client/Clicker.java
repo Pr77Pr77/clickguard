@@ -3,6 +3,7 @@ package de.pr77pr77.clickguard.client;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.network.chat.Component;
+import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.EntityHitResult;
 import net.minecraft.world.phys.HitResult;
@@ -25,8 +26,13 @@ public class Clicker {
         // Check every health and hunger action to prevent triggering on startup
         LocalPlayer player = Minecraft.getInstance().player;
         if (player != null) {
-            Stream.concat(preset.healthActions.stream(), preset.hungerActions.stream())
+            preset.healthActions
                     .forEach(action -> action.triggered = player.getHealth() <= action.points);
+            preset.hungerActions
+                    .forEach(action -> action.triggered = player.getFoodData().getFoodLevel() <= action.points);
+            preset.durabilityActions
+                    .forEach(action -> action.triggered =
+                            1d - ((double) player.getMainHandItem().getDamageValue() / player.getMainHandItem().getMaxDamage()) <= action.fraction);
         }
 
         preset.playerDamaged.triggered = false;
@@ -87,8 +93,8 @@ public class Clicker {
             for (ConfigManager.ConfigData.SliderAction action : preset.healthActions) {
                 if (player.getHealth() <= action.points && !action.triggered) {
                     action.triggered = true;
-                    if (triggerSliderAction(action, "clickguard.filter.action.health.notfication", (int) player.getHealth())) {
-                        return new ClickGuardClient.AutoStoppedInfo(preset, Component.translatable("clickguard.filter.action.health.hud", preset.name, action.points));
+                    if (triggerSliderAction(action, "clickguard.action.health.notfication", (int) player.getHealth())) {
+                        return new ClickGuardClient.AutoStoppedInfo(preset, Component.translatable("clickguard.action.health.hud", preset.name, action.points));
                     }
                 } else if (player.getHealth() > action.points && action.triggered) {
                     action.triggered = false;
@@ -98,12 +104,39 @@ public class Clicker {
             for (ConfigManager.ConfigData.SliderAction action : preset.hungerActions) {
                 if (player.getFoodData().getFoodLevel() <= action.points && !action.triggered) {
                     action.triggered = true;
-                    if (triggerSliderAction(action, "clickguard.filter.action.hunger.notfication", player.getFoodData().getFoodLevel())) {
-                        return new ClickGuardClient.AutoStoppedInfo(preset, Component.translatable("clickguard.filter.action.hunger.hud", preset.name, action.points));
+                    if (triggerSliderAction(action, "clickguard.action.hunger.notfication", player.getFoodData().getFoodLevel())) {
+                        return new ClickGuardClient.AutoStoppedInfo(preset, Component.translatable("clickguard.action.hunger.hud", preset.name, action.points));
                     }
                 } else if (player.getFoodData().getFoodLevel() > action.points && action.triggered) {
                     action.triggered = false;
                     // Enable the action after going above the threshold.
+                }
+            }
+            for (ConfigManager.ConfigData.FractionAction action : preset.durabilityActions) {
+                ItemStack heldItem = player.getMainHandItem();
+                if (heldItem.getMaxDamage() > 0) {
+                    double durabilityPercent = 1d - ((double) heldItem.getDamageValue() / heldItem.getMaxDamage());
+                    if (durabilityPercent <= action.fraction && !action.triggered) {
+                        action.triggered = true;
+
+                        if (action.notification) {
+                            SystemNotifier.notify(Component.translatable("clickguard.action.durability.notfication.title", String.format("%.2f", durabilityPercent * 100)).getString(),
+                                    Component.translatable("clickguard.action.durability.notfication.message", String.format("%.2f", action.fraction * 100)).getString());
+                        }
+                        if (Minecraft.getInstance().level != null && ClickGuardClient.pendingDisconnect == null && action.leaveWorld) {
+                            ClickGuardClient.pendingDisconnect = new ClickGuardClient.AutoDisconnectInfo(preset, action);
+                        }
+
+                        if (action.stopClicker) {
+                            return new ClickGuardClient.AutoStoppedInfo(preset, Component.translatable("clickguard.action.durability.hud", preset.name, String.format("%.2f", action.fraction * 100)));
+                        }
+                    } else if (durabilityPercent > action.fraction && action.triggered) {
+                        action.triggered = false;
+                        // Enable the action after going above the threshold.
+                    }
+                } else {
+                    action.triggered = false;
+                    // Enable the action after holding an item without durability or nothing
                 }
             }
         }
@@ -135,7 +168,7 @@ public class Clicker {
         clicking = false;
     }
 
-    boolean triggerSliderAction(ConfigManager.ConfigData.SliderAction action, final String notificationBaseKey, int pointsLeft) { // notificationBaseKey: e.g. "clickguard.filter.action.health.notfication"
+    boolean triggerSliderAction(ConfigManager.ConfigData.SliderAction action, final String notificationBaseKey, int pointsLeft) { // notificationBaseKey: e.g. "clickguard.action.health.notfication"
         if (action.notification) {
             SystemNotifier.notify(Component.translatable(notificationBaseKey + ".title", pointsLeft).getString(),
                     Component.translatable(notificationBaseKey + ".message", action.points).getString());

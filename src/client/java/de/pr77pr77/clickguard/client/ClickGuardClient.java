@@ -78,10 +78,12 @@ public class ClickGuardClient implements ClientModInitializer {
                         clicker.handleAutomaticClicks();
                     }
 
-                    AutoStoppedInfo info = clicker.checkActions();
-                    if (info != null && autoStoppedInfo == null) {
-                        autoStoppedInfo = info;
-                        break;
+                    if(!(Minecraft.getInstance().gui.screen() instanceof EditPresetScreen) && !(Minecraft.getInstance().gui.screen() instanceof PresetsScreen)) {
+                        AutoStoppedInfo info = clicker.checkActions();
+                        if (info != null && autoStoppedInfo == null) {
+                            autoStoppedInfo = info;
+                            break;
+                        }
                     }
                 }
                 if (autoStoppedInfo != null && autoClickingEnabled) {

@@ -34,15 +34,15 @@ public class ClientPacketListenerDamageMixin {
                     clicker.preset.playerDamaged.triggered = true;
 
                     if (!notificationSent && clicker.preset.playerDamaged.notification) {
-                        SystemNotifier.notify(Component.translatable("clickguard.filter.action.playerDamaged.notfication.title").getString(),
-                                Component.translatable("clickguard.filter.action.playerDamaged.notfication.message").getString());
+                        SystemNotifier.notify(Component.translatable("clickguard.action.playerDamaged.notfication.title").getString(),
+                                Component.translatable("clickguard.action.playerDamaged.notfication.message").getString());
                         notificationSent = true;
                     }
                     if (Minecraft.getInstance().level != null && clicker.preset.playerDamaged.leaveWorld) {
                         pendingDisconnect = new AutoDisconnectInfo(clicker.preset, clicker.preset.playerDamaged);
                     }
                     if (clicker.preset.playerDamaged.stopClicker && autoStoppedInfo == null) {
-                        autoStoppedInfo = new ClickGuardClient.AutoStoppedInfo(clicker.preset, Component.translatable("clickguard.filter.action.playerDamaged.hud", clicker.preset.name));
+                        autoStoppedInfo = new ClickGuardClient.AutoStoppedInfo(clicker.preset, Component.translatable("clickguard.action.playerDamaged.hud", clicker.preset.name));
                         if (notificationSent && Minecraft.getInstance().level == null) {
                             break;
                         }

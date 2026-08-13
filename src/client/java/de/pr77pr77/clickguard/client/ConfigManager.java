@@ -52,6 +52,8 @@ public class ConfigManager {
             public List<SliderAction> healthActions = new ArrayList<>();
             public List<SliderAction> hungerActions = new ArrayList<>();
 
+            public List<FractionAction> durabilityActions = new ArrayList<>();
+
             public boolean enabled = false;
         }
 
@@ -81,6 +83,14 @@ public class ConfigManager {
 
         public static class SliderAction extends SimpleAction {
             public int points = 0;
+
+            public boolean isObsolete() {
+                return !stopClicker && !notification && !leaveWorld;
+            }
+        }
+
+        public static class FractionAction extends SimpleAction {
+            public double fraction = 0;
 
             public boolean isObsolete() {
                 return !stopClicker && !notification && !leaveWorld;

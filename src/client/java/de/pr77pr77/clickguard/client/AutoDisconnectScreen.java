@@ -49,6 +49,9 @@ public class AutoDisconnectScreen extends Screen {
         } else if (disconnectInfo.causingAction instanceof ConfigManager.ConfigData.SliderAction sliderAction &&
                 disconnectInfo.causingPreset.hungerActions.contains(sliderAction)) {
             actionReasonComponent = Component.translatable("clickguard.autoDisconnectScreen.reason.hunger", sliderAction.points);
+        } else if (disconnectInfo.causingAction instanceof ConfigManager.ConfigData.FractionAction fractionAction &&
+                disconnectInfo.causingPreset.durabilityActions.contains(fractionAction)) {
+            actionReasonComponent = Component.translatable("clickguard.autoDisconnectScreen.reason.durability", String.format("%.2f", fractionAction.fraction * 100));
         } else {
             actionReasonComponent = Component.translatable("clickguard.autoDisconnectScreen.reason.unknown");
         }

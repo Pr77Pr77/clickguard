@@ -76,16 +76,16 @@ public class EditPresetScreen extends Screen {
         list.addClickingTypeEntry(preset);
         list.addFilterEntry(preset);
 
-        list.addTitleEntry(Component.translatable("clickguard.filter.action.title"));
+        list.addTitleEntry(Component.translatable("clickguard.action.title"));
         if (preset.playerDamaged == null) {
             preset.playerDamaged = new ConfigManager.ConfigData.SimpleAction();
         }
-        list.addSimpleActionEntry(Component.translatable("clickguard.filter.action.playerDamaged"), preset.playerDamaged, false);
+        list.addSimpleActionEntry(Component.translatable("clickguard.action.playerDamaged"), preset.playerDamaged, false);
 
         if (preset.healthActions == null) {
             preset.healthActions = new ArrayList<>();
         }
-        list.addInnerButon(Component.translatable("clickguard.filter.action.health.addButton"), (_, buttonEntry) -> {
+        list.addInnerButon(Component.translatable("clickguard.action.health.addButton"), (_, buttonEntry) -> {
             ConfigManager.ConfigData.SliderAction healthAction = new ConfigManager.ConfigData.SliderAction();
             preset.healthActions.add(healthAction);
             list.insertIconSliderActionEntry(healthAction, false,
@@ -98,17 +98,35 @@ public class EditPresetScreen extends Screen {
         if (preset.hungerActions == null) {
             preset.hungerActions = new ArrayList<>();
         }
-        list.addInnerButon(Component.translatable("clickguard.filter.action.hunger.addButton"), (_, buttonEntry) -> {
+        list.addInnerButon(Component.translatable("clickguard.action.hunger.addButton"), (_, buttonEntry) -> {
             ConfigManager.ConfigData.SliderAction hungerAction = new ConfigManager.ConfigData.SliderAction();
             preset.hungerActions.add(hungerAction);
             list.insertIconSliderActionEntry(hungerAction,
                     list.children().indexOf(buttonEntry) + 1 == list.children().size(),
                     OptionsList.IconSliderActionEntry.Type.HUNGER, list.children().indexOf(buttonEntry) + 1);
             buttonEntry.lastBoxEntry = false; // When an entry was added below, the button can't be the last entry.
-        }, preset.hungerActions.isEmpty());
+        }, false);
         for (int i = 0; i < preset.hungerActions.size(); i++) {
-            list.addIconSliderActionEntry(preset.hungerActions.get(i), i == preset.hungerActions.size() - 1,
+            list.addIconSliderActionEntry(preset.hungerActions.get(i), false,
                     OptionsList.IconSliderActionEntry.Type.HUNGER);
+        }
+
+        if (preset.durabilityActions == null) {
+            preset.durabilityActions = new ArrayList<>();
+        }
+        list.addInnerButon(Component.translatable("clickguard.action.durability.addButton"), (_, buttonEntry) -> {
+            ConfigManager.ConfigData.FractionAction durabilityAction = new ConfigManager.ConfigData.FractionAction();
+            preset.durabilityActions.add(durabilityAction);
+            list.insertFractionSliderEntry(durabilityAction,
+                    "clickguard.action.durability.slider",
+                    Component.translatable("clickguard.action.durability"),
+                    list.children().indexOf(buttonEntry) + 1 == list.children().size(),
+                    list.children().indexOf(buttonEntry) + 1);
+            buttonEntry.lastBoxEntry = false; // When an entry was added below, the button can't be the last entry.
+        }, preset.durabilityActions.isEmpty());
+        for (int i = 0; i < preset.durabilityActions.size(); i++) {
+            list.addFractionSliderEntry(preset.durabilityActions.get(i), "clickguard.action.durability.slider",
+                    Component.translatable("clickguard.action.durability"), i == preset.durabilityActions.size() - 1);
         }
     }
 
@@ -139,6 +157,7 @@ public class EditPresetScreen extends Screen {
         // Remove obsolete slider actions:
         preset.healthActions.removeIf(ConfigManager.ConfigData.SliderAction::isObsolete);
         preset.hungerActions.removeIf(ConfigManager.ConfigData.SliderAction::isObsolete);
+        preset.durabilityActions.removeIf(ConfigManager.ConfigData.FractionAction::isObsolete);
 
         ClickGuardClient.configManager.save();
         minecraft.gui.setScreen(parent);
@@ -188,6 +207,18 @@ public class EditPresetScreen extends Screen {
 
         public void addInnerButon(Component description, BiConsumer<Button, ButtonEntry> onPress, boolean lastBoxEntry) {
             addEntry(new ButtonEntry(description, onPress, true, lastBoxEntry), 20 + (lastBoxEntry ? 6 : 4));
+        }
+
+        public void addFractionSliderEntry(ConfigManager.ConfigData.FractionAction action, String sliderTranslationKey, Component label, boolean lastActionEntry) {
+            FractionSliderEntry entry = new FractionSliderEntry(minecraft, action, sliderTranslationKey, label, lastActionEntry);
+            addEntry(entry, entry.idealHeight);
+        }
+
+        public void insertFractionSliderEntry(ConfigManager.ConfigData.FractionAction action, String sliderTranslationKey, Component label, boolean lastActionEntry, int index) {
+            FractionSliderEntry entry = new FractionSliderEntry(minecraft, action, sliderTranslationKey, label, lastActionEntry);
+            insertEntry(index, entry, entry.idealHeight);
+            entry.init();
+            scrollToEntry(entry);
         }
 
         protected void insertEntry(int index, Entry newEntry, int height) {
@@ -781,11 +812,11 @@ public class EditPresetScreen extends Screen {
 
             public SimpleActionEntry(Minecraft minecraft, Component label, ConfigManager.ConfigData.SimpleAction action, boolean lastActionEntry) {
                 this.minecraft = minecraft;
-                checkboxStopClicker = Checkbox.builder(Component.translatable("clickguard.filter.action.option.stopClicker"), minecraft.font)
+                checkboxStopClicker = Checkbox.builder(Component.translatable("clickguard.action.option.stopClicker"), minecraft.font)
                         .selected(action.stopClicker).onValueChange((_, value) -> action.stopClicker = value).build();
-                checkboxNotification = Checkbox.builder(Component.translatable("clickguard.filter.action.option.notification"), minecraft.font)
+                checkboxNotification = Checkbox.builder(Component.translatable("clickguard.action.option.notification"), minecraft.font)
                         .selected(action.notification).onValueChange((_, value) -> action.notification = value).build();
-                checkboxLeave = Checkbox.builder(Component.translatable("clickguard.filter.action.option.leave"), minecraft.font)
+                checkboxLeave = Checkbox.builder(Component.translatable("clickguard.action.option.leave"), minecraft.font)
                         .selected(action.leaveWorld).onValueChange((_, value) -> action.leaveWorld = value).build();
                 this.label = label;
                 this.lastActionEntry = lastActionEntry;
@@ -858,13 +889,13 @@ public class EditPresetScreen extends Screen {
                 HEALTH(new IconSlider.IconSprites(Identifier.withDefaultNamespace("hud/heart/full"),
                         Identifier.withDefaultNamespace("hud/heart/container"),
                         Identifier.withDefaultNamespace("hud/heart/half")),
-                        "clickguard.filter.action.health.slider",
-                        Component.translatable("clickguard.filter.action.health")),
+                        "clickguard.action.health.slider",
+                        Component.translatable("clickguard.action.health")),
                 HUNGER(new IconSlider.IconSprites(Identifier.withDefaultNamespace("hud/food_full"),
                         Identifier.withDefaultNamespace("hud/food_empty"),
                         id("hud/food_right_eaten")),
-                        "clickguard.filter.action.hunger.slider",
-                        Component.translatable("clickguard.filter.action.hunger"));
+                        "clickguard.action.hunger.slider",
+                        Component.translatable("clickguard.action.hunger"));
 
                 final IconSlider.IconSprites sprites;
                 final String sliderTranslationKey;
@@ -880,11 +911,11 @@ public class EditPresetScreen extends Screen {
             public IconSliderActionEntry(Minecraft minecraft, ConfigManager.ConfigData.SliderAction action, boolean lastActionEntry,
                                          Type type) {
                 this.minecraft = minecraft;
-                checkboxStopClicker = Checkbox.builder(Component.translatable("clickguard.filter.action.option.stopClicker"), minecraft.font)
+                checkboxStopClicker = Checkbox.builder(Component.translatable("clickguard.action.option.stopClicker"), minecraft.font)
                         .selected(action.stopClicker).onValueChange((_, value) -> action.stopClicker = value).build();
-                checkboxNotification = Checkbox.builder(Component.translatable("clickguard.filter.action.option.notification"), minecraft.font)
+                checkboxNotification = Checkbox.builder(Component.translatable("clickguard.action.option.notification"), minecraft.font)
                         .selected(action.notification).onValueChange((_, value) -> action.notification = value).build();
-                checkboxLeave = Checkbox.builder(Component.translatable("clickguard.filter.action.option.leave"), minecraft.font)
+                checkboxLeave = Checkbox.builder(Component.translatable("clickguard.action.option.leave"), minecraft.font)
                         .selected(action.leaveWorld).onValueChange((_, value) -> action.leaveWorld = value).build();
                 this.type = type;
                 slider = new IconSlider(0, 0, type.sprites, 20,
@@ -946,6 +977,93 @@ public class EditPresetScreen extends Screen {
             @Override
             public @NonNull List<? extends NarratableEntry> narratables() {
                 return List.of(NarratableEntryOfComponent(type.label), slider, checkboxStopClicker, checkboxNotification, checkboxLeave);
+            }
+        }
+
+        public static class FractionSliderEntry extends Entry {
+            public final int idealHeight;
+            public final Checkbox checkboxStopClicker;
+            public final Checkbox checkboxNotification;
+            public final Checkbox checkboxLeave;
+
+            public final Component label;
+
+            public final boolean lastActionEntry;
+
+            private final Minecraft minecraft;
+
+            FractionSlider slider;
+
+            public FractionSliderEntry(Minecraft minecraft, ConfigManager.ConfigData.FractionAction action, String sliderTranslationKey,
+                                       Component label, boolean lastActionEntry) {
+                this.minecraft = minecraft;
+                checkboxStopClicker = Checkbox.builder(Component.translatable("clickguard.action.option.stopClicker"), minecraft.font)
+                        .selected(action.stopClicker).onValueChange((_, value) -> action.stopClicker = value).build();
+                checkboxNotification = Checkbox.builder(Component.translatable("clickguard.action.option.notification"), minecraft.font)
+                        .selected(action.notification).onValueChange((_, value) -> action.notification = value).build();
+                checkboxLeave = Checkbox.builder(Component.translatable("clickguard.action.option.leave"), minecraft.font)
+                        .selected(action.leaveWorld).onValueChange((_, value) -> action.leaveWorld = value).build();
+                slider = new FractionSlider(0, 0, 0, AbstractSliderButton.DEFAULT_HEIGHT,
+                        sliderTranslationKey, action.fraction, points -> action.fraction = points);
+                this.lastActionEntry = lastActionEntry;
+                this.label = label;
+
+                idealHeight = 4 + minecraft.font.lineHeight + 2 + IconSlider.HEIGHT + 2 + 19 + (lastActionEntry ? 4 : 2);
+            }
+
+            @Override
+            void init() {
+                slider.setPosition(getContentX() + 4, getContentY() + 2 + minecraft.font.lineHeight + 2);
+                slider.setWidth(getContentWidth() - 8);
+
+                final int checkboxesY = getContentY() + 2 + minecraft.font.lineHeight + 2 + slider.getHeight() + 2;
+                final int checkboxesWidth = (getContentWidth() - 12) / 3;
+                checkboxStopClicker.setPosition(getContentX() + 4, checkboxesY);
+                checkboxStopClicker.setWidth(checkboxesWidth);
+                checkboxNotification.setPosition(getContentX() + 4 + checkboxesWidth + 2, checkboxesY);
+                checkboxNotification.setWidth(checkboxesWidth);
+                checkboxLeave.setPosition(getContentX() + 4 + (checkboxesWidth + 2) * 2, checkboxesY);
+                checkboxLeave.setWidth(checkboxesWidth);
+            }
+
+            @Override
+            public void extractContent(@NonNull GuiGraphicsExtractor graphics, int mouseX, int mouseY, boolean hovered, float a) {
+                // General box, together with other
+                graphics.fill(getContentX(), getY(), getContentRight(), lastActionEntry ? getContentBottom() : getY() + getHeight(), 0x44000000);
+                // Own box:
+                graphics.fill(getContentX() + 2, getY() + 2, getContentRight() - 2, lastActionEntry ? (getContentBottom() - 2) : getContentBottom(), 0x44000000);
+                graphics.text(
+                        minecraft.font,
+                        label,
+                        getContentX() + 4,
+                        getContentY() + 2,
+                        0xFFFFFFFF,
+                        true
+                );
+
+                slider.setY(getContentY() + 2 + minecraft.font.lineHeight + 2);
+                slider.extractRenderState(graphics, mouseX, mouseY, a);
+
+                final int checkboxesY = getContentY() + 2 + minecraft.font.lineHeight + 2 + slider.getHeight() + 2;
+
+                checkboxStopClicker.setY(checkboxesY);
+                checkboxStopClicker.extractContents(graphics, mouseX, mouseY, a);
+
+                checkboxNotification.setY(checkboxesY);
+                checkboxNotification.extractContents(graphics, mouseX, mouseY, a);
+
+                checkboxLeave.setY(checkboxesY);
+                checkboxLeave.extractContents(graphics, mouseX, mouseY, a);
+            }
+
+            @Override
+            public @NonNull List<? extends GuiEventListener> children() {
+                return List.of(slider, checkboxStopClicker, checkboxNotification, checkboxLeave);
+            }
+
+            @Override
+            public @NonNull List<? extends NarratableEntry> narratables() {
+                return List.of(NarratableEntryOfComponent(label), slider, checkboxStopClicker, checkboxNotification, checkboxLeave);
             }
         }
     }

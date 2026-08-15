@@ -14,6 +14,7 @@ import net.minecraft.util.CommonColors;
 import org.jspecify.annotations.NonNull;
 
 import static de.pr77pr77.clickguard.ClickGuard.id;
+import static de.pr77pr77.clickguard.client.ClickGuardClient.formatDuration;
 
 public class AutoDisconnectScreen extends Screen {
     private int hoverTriggerCount = -1;
@@ -52,6 +53,9 @@ public class AutoDisconnectScreen extends Screen {
         } else if (disconnectInfo.causingAction instanceof ConfigManager.ConfigData.FractionAction fractionAction &&
                 disconnectInfo.causingPreset.durabilityActions.contains(fractionAction)) {
             actionReasonComponent = Component.translatable("clickguard.autoDisconnectScreen.reason.durability", String.format("%.2f", fractionAction.fraction * 100));
+        } else if (disconnectInfo.causingAction instanceof ConfigManager.ConfigData.TimeAction timeAction &&
+                disconnectInfo.causingPreset.waitTimeActions.contains(timeAction)) {
+            actionReasonComponent = Component.translatable("clickguard.autoDisconnectScreen.reason.waitTime", formatDuration(timeAction.timeMS));
         } else {
             actionReasonComponent = Component.translatable("clickguard.autoDisconnectScreen.reason.unknown");
         }

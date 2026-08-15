@@ -15,6 +15,7 @@ import net.minecraft.client.gui.narration.NarratedElementType;
 import net.minecraft.client.gui.narration.NarrationElementOutput;
 import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.resources.Identifier;
 import org.jspecify.annotations.NonNull;
 import org.lwjgl.glfw.GLFW;
@@ -168,6 +169,38 @@ public class ClickGuardClient implements ClientModInitializer {
             this.causingPreset = causingPreset;
             this.reasonMessage = reasonMessage;
         }
+    }
+
+    public static Component formatDuration(long milliseconds) {
+        long hours = milliseconds / 3_600_000;
+        long minutes = (milliseconds % 3_600_000) / 60_000;
+        long seconds = (milliseconds % 60_000) / 1000;
+        long millis = milliseconds % 1000;
+
+        List<Component> parts = new ArrayList<>();
+
+        if (hours > 0) {
+            parts.add(Component.translatable("clickguard.hours", hours));
+        }
+        if (minutes > 0) {
+            parts.add(Component.translatable("clickguard.minutes", minutes));
+        }
+        if (seconds > 0) {
+            parts.add(Component.translatable("clickguard.seconds", seconds));
+        }
+        if (millis > 0 || parts.isEmpty()) {
+            parts.add(Component.translatable("clickguard.milliseconds", millis));
+        }
+
+        MutableComponent result = Component.empty();
+        for (int i = 0; i < parts.size(); i++) {
+            result.append(parts.get(i));
+            if (i < parts.size() - 1) {
+                result.append(", ");
+            }
+        }
+
+        return result;
     }
 
     public static NarratableEntry NarratableEntryOfComponent(Component text) {

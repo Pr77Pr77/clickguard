@@ -54,6 +54,8 @@ public class ConfigManager {
 
             public List<FractionAction> durabilityActions = new ArrayList<>();
 
+            public List<TimeAction> waitTimeActions = new ArrayList<>();
+
             public boolean enabled = false;
         }
 
@@ -94,6 +96,14 @@ public class ConfigManager {
 
             public boolean isObsolete() {
                 return !stopClicker && !notification && !leaveWorld;
+            }
+        }
+
+        public static class TimeAction extends SimpleAction {
+            public Integer timeMS; // null = not set
+
+            public boolean isObsolete() {
+                return (!stopClicker && !notification && !leaveWorld) || timeMS == null;
             }
         }
     }

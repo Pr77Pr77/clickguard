@@ -9,14 +9,15 @@ import net.minecraft.world.phys.EntityHitResult;
 import net.minecraft.world.phys.HitResult;
 import org.jspecify.annotations.Nullable;
 
-import java.util.stream.Stream;
-
 import static de.pr77pr77.clickguard.client.ClickGuardClient.autoClickingEnabled;
+import static de.pr77pr77.clickguard.client.ClickGuardClient.formatDuration;
 
 public class Clicker {
     private long nextClickTime = 0; // nanoseconds
     private long clickReleaseTime = 0; // nanoseconds
     private boolean clicking = false;
+
+    private long lastClickTime; // nanoseconds
 
     public final ConfigManager.ConfigData.Preset preset;
 
@@ -33,7 +34,10 @@ public class Clicker {
             preset.durabilityActions
                     .forEach(action -> action.triggered =
                             1d - ((double) player.getMainHandItem().getDamageValue() / player.getMainHandItem().getMaxDamage()) <= action.fraction);
+            preset.waitTimeActions
+                    .forEach(action -> action.triggered = false);
         }
+        lastClickTime = System.nanoTime();
 
         preset.playerDamaged.triggered = false;
     }
@@ -93,7 +97,7 @@ public class Clicker {
             for (ConfigManager.ConfigData.SliderAction action : preset.healthActions) {
                 if (player.getHealth() <= action.points && !action.triggered) {
                     action.triggered = true;
-                    if (triggerSliderAction(action, "clickguard.action.health.notfication", (int) player.getHealth())) {
+                    if (triggerSliderAction(action, "clickguard.action.health.notification", (int) player.getHealth())) {
                         return new ClickGuardClient.AutoStoppedInfo(preset, Component.translatable("clickguard.action.health.hud", preset.name, action.points));
                     }
                 } else if (player.getHealth() > action.points && action.triggered) {
@@ -104,7 +108,7 @@ public class Clicker {
             for (ConfigManager.ConfigData.SliderAction action : preset.hungerActions) {
                 if (player.getFoodData().getFoodLevel() <= action.points && !action.triggered) {
                     action.triggered = true;
-                    if (triggerSliderAction(action, "clickguard.action.hunger.notfication", player.getFoodData().getFoodLevel())) {
+                    if (triggerSliderAction(action, "clickguard.action.hunger.notification", player.getFoodData().getFoodLevel())) {
                         return new ClickGuardClient.AutoStoppedInfo(preset, Component.translatable("clickguard.action.hunger.hud", preset.name, action.points));
                     }
                 } else if (player.getFoodData().getFoodLevel() > action.points && action.triggered) {
@@ -120,8 +124,8 @@ public class Clicker {
                         action.triggered = true;
 
                         if (action.notification) {
-                            SystemNotifier.notify(Component.translatable("clickguard.action.durability.notfication.title", String.format("%.2f", durabilityPercent * 100)).getString(),
-                                    Component.translatable("clickguard.action.durability.notfication.message", String.format("%.2f", action.fraction * 100)).getString());
+                            SystemNotifier.notify(Component.translatable("clickguard.action.durability.notification.title", String.format("%.2f", durabilityPercent * 100)).getString(),
+                                    Component.translatable("clickguard.action.durability.notification.message", String.format("%.2f", action.fraction * 100)).getString());
                         }
                         if (Minecraft.getInstance().level != null && ClickGuardClient.pendingDisconnect == null && action.leaveWorld) {
                             ClickGuardClient.pendingDisconnect = new ClickGuardClient.AutoDisconnectInfo(preset, action);
@@ -138,6 +142,25 @@ public class Clicker {
                     action.triggered = false;
                     // Enable the action after holding an item without durability or nothing
                 }
+            }
+        }
+        for (ConfigManager.ConfigData.TimeAction action : preset.waitTimeActions) {
+            if (lastClickTime + action.timeMS * 1_000_000L <= System.nanoTime() && !action.triggered) {
+                action.triggered = true;
+
+                if (action.notification) {
+                    SystemNotifier.notify(Component.translatable("clickguard.action.waitTime.notification.title", formatDuration((System.nanoTime() - lastClickTime) / 1_000_000L)).getString(),
+                            Component.translatable("clickguard.action.waitTime.notification.message", formatDuration(action.timeMS)).getString());
+                }
+                if (Minecraft.getInstance().level != null && ClickGuardClient.pendingDisconnect == null && action.leaveWorld) {
+                    ClickGuardClient.pendingDisconnect = new ClickGuardClient.AutoDisconnectInfo(preset, action);
+                }
+                if (action.stopClicker) {
+                    return new ClickGuardClient.AutoStoppedInfo(preset, Component.translatable("clickguard.action.waitTime.hud", preset.name, formatDuration(action.timeMS)));
+                }
+            } else if (lastClickTime + action.timeMS * 1_000_000L > System.nanoTime() && action.triggered) {
+                action.triggered = false;
+                // Enable the action after going above the threshold.
             }
         }
         return null;
@@ -164,11 +187,12 @@ public class Clicker {
     }
 
     private void releaseClick() {
+        lastClickTime = System.nanoTime();
         preset.keybind.setDown(false);
         clicking = false;
     }
 
-    boolean triggerSliderAction(ConfigManager.ConfigData.SliderAction action, final String notificationBaseKey, int pointsLeft) { // notificationBaseKey: e.g. "clickguard.action.health.notfication"
+    boolean triggerSliderAction(ConfigManager.ConfigData.SliderAction action, final String notificationBaseKey, int pointsLeft) { // notificationBaseKey: e.g. "clickguard.action.health.notification"
         if (action.notification) {
             SystemNotifier.notify(Component.translatable(notificationBaseKey + ".title", pointsLeft).getString(),
                     Component.translatable(notificationBaseKey + ".message", action.points).getString());

@@ -34,8 +34,8 @@ public class ClientPacketListenerDamageMixin {
                     clicker.preset.playerDamaged.triggered = true;
 
                     if (!notificationSent && clicker.preset.playerDamaged.notification) {
-                        SystemNotifier.notify(Component.translatable("clickguard.action.playerDamaged.notfication.title").getString(),
-                                Component.translatable("clickguard.action.playerDamaged.notfication.message").getString());
+                        SystemNotifier.notify(Component.translatable("clickguard.action.playerDamaged.notification.title").getString(),
+                                Component.translatable("clickguard.action.playerDamaged.notification.message").getString());
                         notificationSent = true;
                     }
                     if (Minecraft.getInstance().level != null && clicker.preset.playerDamaged.leaveWorld) {

@@ -1,7 +1,6 @@
 package de.pr77pr77.clickguard.client;
 
 import net.minecraft.client.gui.components.AbstractSliderButton;
-import net.minecraft.client.gui.components.Tooltip;
 import net.minecraft.network.chat.Component;
 
 import java.util.function.Consumer;

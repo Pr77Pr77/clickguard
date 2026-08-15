@@ -88,5 +88,7 @@
   "clickguard.milliseconds": "%s Millisekunden",
   "clickguard.seconds": "%s Sekunden",
   "clickguard.minutes": "%s Minuten",
-  "clickguard.hours": "%s Stunden"
+  "clickguard.hours": "%s Stunden",
+  "clickguard.on": "AN",
+  "clickguard.off": "AUS"
 }

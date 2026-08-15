@@ -195,9 +195,9 @@ public class PresetsScreen extends Screen {
 
             public static Component getColoredOnOffComponent(Boolean option) {
                 if (option) {
-                    return autoClickingEnabled ? Component.translatable("options.on").withColor(0x54FC54) : Component.translatable("options.on").withColor(0xFCFC54);
+                    return autoClickingEnabled ? Component.translatable("clickguard.on").withColor(0x54FC54) : Component.translatable("clickguard.on").withColor(0xFCFC54);
                 } else {
-                    return Component.translatable("options.off").withColor(0xFC5454);
+                    return Component.translatable("clickguard.off").withColor(0xFC5454);
                 }
             }
 

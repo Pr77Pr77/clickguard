@@ -5,19 +5,19 @@ It includes smart AFK-safety features:
 automatic stopping, system notifications, and automatic disconnecting in the following scenarios:
 
 - On damage
-- On a specific health level
-- On a specific hunger level
-- On a specific weapon durability
+- At a specific health level
+- At a specific hunger level
+- At a specific weapon durability
 - After a specific time of the auto clicker not clicking because of filters
 
 The mod also lets you only click on entities, blocks or both.
 
 ## Installation
 
-This mod is only supported by the Fabric mod loader. For installation guides regarding fabric itself please use the
+This mod is only supported by the Fabric mod loader. For installation guides regarding Fabric itself please, use the
 official [Fabric player guides](https://docs.fabricmc.net/players/).
 
-You can download the mod on either [Modrinth](https://modrinth.com/mod/clickguard),
+You can download the mod from either [Modrinth](https://modrinth.com/mod/clickguard),
 [CurseForge](https://www.curseforge.com/minecraft/mc-mods/clickguard) or
 on [GitHub](https://github.com/Pr77Pr77/clickguard)
 under [releases](https://github.com/Pr77Pr77/clickguard/releases).
@@ -29,12 +29,12 @@ This mod has the following dependencies:
 
 ## Using the mod
 
-To use the mod, you need to create a preset first. To create a preset, press the set keybind for "Open ClickGuard's
+To use the mod, you need to create a preset first. To create a preset, press the assigned keybind for "Open ClickGuard's
 presets menu", which defaults to `,`.
 
 After creating your presets, simply enable them from the same presets menu by clicking on "OFF". The preset is now
 enabled, but for it to actually start clicking, you need to either click on the
-"Start clicking" button or press `.` while in game.
+"Start clicking" button or press `.` while in-game.
 
 ![Presets Menu](resources/screenshots/presets.png)
 *The presets menu with some example presets*
@@ -51,7 +51,7 @@ A HUD will tell you that the auto clicker is enabled and which presets are enabl
 ## Configuring presets (Feature explanation)
 
 When creating a preset, you are asked to choose a keybind before configuring anything else. After choosing the keybind,
-you will get to changing the other configuration options:
+you can proceed to configure the other options:
 
 ![Edit Presets Screen](resources/screenshots/edit-preset.png)
 *The screen to edit a preset*
@@ -60,14 +60,14 @@ you will get to changing the other configuration options:
 
 ![Name element](resources/screenshots/edit-elements/name.png)
 
-The name of the preset. This is just for you to tell presets apart in the presets menu, the hud and the screen after
+The name of the preset. This is just for you to tell presets apart in the presets menu, the HUD and the screen after
 automatically disconnecting.
 
 ### Key for auto clicking
 
 ![Key element](resources/screenshots/edit-elements/key.png)
 
-By clicking on this button you can change the keybind which should be pressed by the auto clicker.
+By clicking on this button, you can change the keybind which should be pressed by the auto clicker.
 
 ### Clicking type and custom timings
 
@@ -115,8 +115,8 @@ This action's reactions are executed as soon as you take any damage. The reactio
 ![Add button + Health action element](resources/screenshots/edit-elements/health-action.png)
 
 For this type of action, there can be multiple of the same type. To create an action, click on the button "Add action at
-a specific health level". With the slider featuring hearts, the health can be set, at or below which the reactions
-should be triggered.
+a specific health level". With the slider featuring hearts, you can set the health threshold at or below which the
+reactions will trigger.
 
 #### At specific hunger levels
 
@@ -136,8 +136,8 @@ selected reactions should be triggered.
 
 ![Add button + Wait time action element](resources/screenshots/edit-elements/time-action.png)
 
-These actions are also crated by clicking on the button labeled
-"Add action after set time without clicking". In the text box you can enter the time after which you want the reactions
+These actions are also created by clicking on the button labeled
+"Add action after set time without clicking". In the text box, you can enter the time after which you want the reactions
 to be triggered if the auto clicker did not perform a click. The auto clicker not performing a click can be due to
 filters. This option does not take other presets into account for the wait time, but reactions can have an impact on
 other presets.

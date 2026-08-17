@@ -7,6 +7,8 @@ import java.awt.*;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.nio.charset.StandardCharsets;
+import java.util.Base64;
 import java.util.Map;
 
 import static de.pr77pr77.clickguard.ClickGuard.LOGGER;
@@ -29,23 +31,37 @@ public class SystemNotifier {
         }
     }
 
-    private static void notifyWindows(String title, String message) throws AWTException {
-        if (!SystemTray.isSupported()) return;
-
-        SystemTray tray = SystemTray.getSystemTray();
-        Image image = Toolkit.getDefaultToolkit().createImage(new byte[0]);
-
-        TrayIcon trayIcon = new TrayIcon(image, "ClickGuard");
-        trayIcon.setImageAutoSize(true);
-        tray.add(trayIcon);
-
-        trayIcon.displayMessage(title, message, TrayIcon.MessageType.INFO);
-
+    public static void notifyWindows(String title, String message) {
         new Thread(() -> {
             try {
-                Thread.sleep(5000);
-                tray.remove(trayIcon);
-            } catch (InterruptedException ignored) {}
+                String appName = getMinecraftWindowTitle();
+
+                String safeAppName = appName.replace("'", "''");
+                String safeTitle = title.replace("&", "&amp;").replace("<", "&lt;").replace(">", "&gt;");
+                String safeMessage = message.replace("&", "&amp;").replace("<", "&lt;").replace(">", "&gt;");
+
+                String script = String.format(
+                        "$regPath = 'HKCU:\\Software\\Classes\\AppUserModelId\\MinecraftApp'; " +
+                                "if (!(Test-Path $regPath)) { New-Item -Path $regPath -Force | Out-Null; } " +
+                                "Set-ItemProperty -Path $regPath -Name 'DisplayName' -Value '%s' -Force | Out-Null; " +
+                                "[Windows.UI.Notifications.ToastNotificationManager, Windows.UI.Notifications, ContentType = WindowsRuntime] | Out-Null; " +
+                                "[Windows.Data.Xml.Dom.XmlDocument, Windows.Data.Xml.Dom.XmlDocument, ContentType = WindowsRuntime] | Out-Null; " +
+                                "$xml = New-Object Windows.Data.Xml.Dom.XmlDocument; " +
+                                "$xml.LoadXml('<toast><visual><binding template=\"ToastGeneric\"><text>%s</text><text>%s</text></binding></visual></toast>'); " +
+                                "$toast = [Windows.UI.Notifications.ToastNotification]::new($xml); " +
+                                "[Windows.UI.Notifications.ToastNotificationManager]::CreateToastNotifier('MinecraftApp').Show($toast); ",
+                        safeAppName, safeTitle, safeMessage
+                );
+
+                byte[] utf16Bytes = script.getBytes(StandardCharsets.UTF_16LE);
+                String encodedScript = Base64.getEncoder().encodeToString(utf16Bytes);
+
+                ProcessBuilder pb = new ProcessBuilder("powershell", "-NoProfile", "-WindowStyle", "Hidden", "-EncodedCommand", encodedScript);
+                pb.start();
+
+            } catch (Exception e) {
+                LOGGER.error("Could not send system notification: ", e);
+            }
         }).start();
     }
 

@@ -21,6 +21,9 @@
 		],
 		"client": [
 			"de.pr77pr77.clickguard.client.ClickGuardClient"
+		],
+		"modmenu": [
+			"de.pr77pr77.clickguard.client.ModMenuIntegration"
 		]
 	},
 	"mixins": [
@@ -36,5 +39,18 @@
 		"minecraft": ">=${minecraft_version} <${next_major_minecraft_version}",
 		"java": ">=25",
 		"fabric-api": "*"
+	},
+	"suggests": {
+		"modmenu": "*"
+	},
+	"custom": {
+		"modmenu": {
+			"links": {
+				"modmenu.discord": "https://discord.gg/wfeM63Jar5",
+				"modmenu.curseforge": "https://www.curseforge.com/minecraft/mc-mods/clickguard",
+				"modmenu.modrinth": "https://modrinth.com/mod/clickguard",
+				"modmenu.github_releases": "https://github.com/Pr77Pr77/clickguard/releases"
+			}
+		}
 	}
 }

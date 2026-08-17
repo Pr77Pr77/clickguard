@@ -23,8 +23,15 @@ public class PresetsScreen extends Screen {
 
     Button startStopButton;
 
+    Screen parent;
+
     public PresetsScreen() {
         super(Component.translatable("clickguard.presets.title"));
+    }
+
+    public PresetsScreen(Screen parent) {
+        this();
+        this.parent = parent;
     }
 
     @Override
@@ -39,6 +46,7 @@ public class PresetsScreen extends Screen {
                 _ -> onClose()).build());
         startStopButton = Button.builder(getStartStopButtonComponent(),
                 _ -> toggleAutoClickingEnabled()).build();
+        startStopButton.active = minecraft.level != null;
         footerButtons.addChild(startStopButton);
         layout.addToFooter(footerButtons);
 
@@ -61,6 +69,15 @@ public class PresetsScreen extends Screen {
         if (list != null) {
             list.clearEntries();
             list.fillList();
+        }
+    }
+
+    @Override
+    public void onClose() {
+        if (parent != null) {
+            minecraft.gui.setScreen(parent);
+        } else {
+            super.onClose();
         }
     }
 

@@ -981,7 +981,7 @@ public class EditPresetScreen extends Screen {
                 super(minecraft, label, action, lastActionEntry);
                 slider = new FractionSlider(0, 0, 0, AbstractSliderButton.DEFAULT_HEIGHT,
                         sliderTranslationKey, action.fraction, points -> action.fraction = points);
-                idealHeight = 4 + minecraft.font.lineHeight + 2 + IconSlider.HEIGHT + 2 + 19 + (lastActionEntry ? 4 : 2);
+                idealHeight = 4 + minecraft.font.lineHeight + 2 + slider.getHeight() + 2 + 19 + (lastActionEntry ? 4 : 2);
             }
 
             @Override
@@ -1045,7 +1045,7 @@ public class EditPresetScreen extends Screen {
                 if (action.timeMS != null) {
                     waitTimeEditBox.setValue(formatMsToInterval(action.timeMS));
                 }
-                idealHeight = 4 + minecraft.font.lineHeight + 2 + IconSlider.HEIGHT + 2 + 19 + (lastActionEntry ? 4 : 2);
+                idealHeight = 4 + minecraft.font.lineHeight + 2 + 20 + 2 + 19 + (lastActionEntry ? 4 : 2);
             }
 
             @Override

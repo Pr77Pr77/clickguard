@@ -29,10 +29,10 @@ jobs:
       - name: Upload artifacts to Modrinth, Curseforge and GitHub
         uses: Kir-Antipov/mc-publish@v3.3
         with:
-          modrinth-id: o6CQ8dwL
+          modrinth-id: PZ2CyYn8
           modrinth-token: ${{ secrets.MODRINTH_TOKEN }}
 
-          curseforge-id: 1497170
+          curseforge-id: 1656967
           curseforge-token: ${{ secrets.CURSEFORGE_TOKEN }}
 
           github-token: ${{ secrets.GITHUB_TOKEN }}

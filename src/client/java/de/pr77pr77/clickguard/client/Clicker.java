@@ -63,10 +63,10 @@ public class Clicker {
                 break;
             case CONTINUOUS:
                 Minecraft minecraft = Minecraft.getInstance();
-                if (!clicking && minecraft.gui.screen() == null) {
+                if (!clicking && minecraft.screen == null) {
                     startClick(); // Clicking is stopped when the auto clicker is turned off, see releaseClickIfClicking()
                 }
-                if (minecraft.gui.screen() != null) {
+                if (minecraft.screen != null) {
                     releaseClick(); // Screens stop clicks, so we can cleanly release the key and set clicking to false.
                 }
                 if (preset.filterBlocks || preset.filterEntities) {

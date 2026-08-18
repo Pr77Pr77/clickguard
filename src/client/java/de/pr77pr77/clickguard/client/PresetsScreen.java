@@ -75,7 +75,7 @@ public class PresetsScreen extends Screen {
     @Override
     public void onClose() {
         if (parent != null) {
-            minecraft.gui.setScreen(parent);
+            minecraft.setScreen(parent);
         } else {
             super.onClose();
         }
@@ -134,7 +134,7 @@ public class PresetsScreen extends Screen {
             private CreateButtonEntry() {
                 button = Button.builder(Component.translatable("clickguard.presets.new"), _ -> {
                     Minecraft minecraft = Minecraft.getInstance();
-                    minecraft.gui.setScreen(new ChooseKeybindScreen(minecraft.gui.screen()));
+                    minecraft.setScreen(new ChooseKeybindScreen(minecraft.screen));
                 }).build();
             }
 
@@ -178,7 +178,7 @@ public class PresetsScreen extends Screen {
                 keybindAndBriefOptions.setMaxRows(1);
                 keybindAndBriefOptions.setCentered(false);
 
-                Screen parentScreen = minecraft.gui.screen();
+                Screen parentScreen = minecraft.screen;
 
                 enableButton = CycleButton.builder(PresetEnty::getColoredOnOffComponent,
                                 preset.enabled)
@@ -198,14 +198,14 @@ public class PresetsScreen extends Screen {
                             }
                         }); // Position and size set in init
                 editButton = Button.builder(Component.translatable("selectServer.edit"),
-                        _ -> minecraft.gui.setScreen(new EditPresetScreen(parentScreen, preset))).build();
+                        _ -> minecraft.setScreen(new EditPresetScreen(parentScreen, preset))).build();
                 deleteButton = Button.builder(Component.translatable("selectServer.delete"),
-                        _ -> minecraft.gui.setScreen(new ConfirmScreen(answer -> {
+                        _ -> minecraft.setScreen(new ConfirmScreen(answer -> {
                             if (answer) {
                                 ClickGuardClient.configManager.data.presets.remove(preset);
                                 ClickGuardClient.configManager.save();
                             }
-                            minecraft.gui.setScreen(parentScreen);
+                            minecraft.setScreen(parentScreen);
                         }, Component.translatable("clickguard.presets.delete.question"), Component.translatable("selectServer.deleteWarning", preset.name),
                                 Component.translatable("selectWorld.deleteButton"), CommonComponents.GUI_CANCEL))).build();
             }

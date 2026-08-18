@@ -68,7 +68,7 @@ public class AutoDisconnectScreen extends Screen {
         addRenderableWidget(textWidget);
 
         toTitleScreenButton = Button.builder(Component.translatable("clickguard.autoDisconnectScreen.toTitleScreen"),
-                        _ -> Minecraft.getInstance().gui.setScreen(new TitleScreen()))
+                        _ -> Minecraft.getInstance().setScreen(new TitleScreen()))
                 .bounds((width - 150) / 2, textWidget.getBottom() + 20, 150, 20).build();
         addRenderableWidget(toTitleScreenButton);
 

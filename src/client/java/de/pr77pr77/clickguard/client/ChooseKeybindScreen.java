@@ -65,7 +65,7 @@ public class ChooseKeybindScreen extends Screen {
 
     @Override
     public void onClose() {
-        minecraft.gui.setScreen(parent);
+        minecraft.setScreen(parent);
     }
 
     public static class KeybindsList extends ContainerObjectSelectionList<KeybindsList.Entry> {
@@ -86,9 +86,9 @@ public class ChooseKeybindScreen extends Screen {
                                 !screen.preset.keybind.getName().equals("key.attack")) {
                             screen.preset.clickingType = ConfigManager.ConfigData.ClickingType.CUSTOM_TIMING;
                         }
-                        minecraft.gui.setScreen(screen.parent);
+                        minecraft.setScreen(screen.parent);
                     } else {
-                        minecraft.gui.setScreen(new EditPresetScreen(screen.parent, keyMappingClicked));
+                        minecraft.setScreen(new EditPresetScreen(screen.parent, keyMappingClicked));
                     }
                 }));
             }

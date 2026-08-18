@@ -49,8 +49,8 @@ public class ClickGuardClient implements ClientModInitializer {
         ClientTickEvents.END_CLIENT_TICK.register(client -> {
             while (openPresetsScreen.consumeClick()) {
                 client.execute(() -> {
-                    if (client.gui.screen() == null) {
-                        client.gui.setScreen(new PresetsScreen());
+                    if (client.screen == null) {
+                        client.setScreen(new PresetsScreen());
                     }
                 });
             }
@@ -65,7 +65,7 @@ public class ClickGuardClient implements ClientModInitializer {
         ClientTickEvents.END_CLIENT_TICK.register(client -> {
             while (enableClickingKey.consumeClick()) {
                 client.execute(() -> {
-                    if (client.gui.screen() == null) {
+                    if (client.screen == null) {
                         toggleAutoClickingEnabled();
                     }
                 });
@@ -79,7 +79,7 @@ public class ClickGuardClient implements ClientModInitializer {
                         clicker.handleAutomaticClicks();
                     }
 
-                    if(!(Minecraft.getInstance().gui.screen() instanceof EditPresetScreen) && !(Minecraft.getInstance().gui.screen() instanceof PresetsScreen)) {
+                    if(!(Minecraft.getInstance().screen instanceof EditPresetScreen) && !(Minecraft.getInstance().screen instanceof PresetsScreen)) {
                         AutoStoppedInfo info = clicker.checkActions();
                         if (info != null && autoStoppedInfo == null) {
                             autoStoppedInfo = info;
@@ -126,7 +126,7 @@ public class ClickGuardClient implements ClientModInitializer {
 
     public static void toggleAutoClickingEnabled() {
         autoClickingEnabled = !autoClickingEnabled;
-        if (Minecraft.getInstance().gui.screen() instanceof PresetsScreen presetsScreen) {
+        if (Minecraft.getInstance().screen instanceof PresetsScreen presetsScreen) {
             presetsScreen.startStopButton.setMessage(PresetsScreen.getStartStopButtonComponent());
             presetsScreen.list.updateEnableButtons();
         }

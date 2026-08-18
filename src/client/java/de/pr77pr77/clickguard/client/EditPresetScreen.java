@@ -72,7 +72,7 @@ public class EditPresetScreen extends Screen {
                     }
                 });
         list.addButon(Component.translatable("clickguard.keybind.label", Component.translatable(preset.keybind.getName())),
-                (_, _) -> minecraft.gui.setScreen(new ChooseKeybindScreen(this, preset)));
+                (_, _) -> minecraft.setScreen(new ChooseKeybindScreen(this, preset)));
         list.addClickingTypeEntry(preset);
         list.addFilterEntry(preset);
 
@@ -172,7 +172,7 @@ public class EditPresetScreen extends Screen {
         preset.waitTimeActions.removeIf(ConfigManager.ConfigData.TimeAction::isObsolete);
 
         ClickGuardClient.configManager.save();
-        minecraft.gui.setScreen(parent);
+        minecraft.setScreen(parent);
     }
 
     public static class OptionsList extends ContainerObjectSelectionList<OptionsList.Entry> {
@@ -1018,7 +1018,7 @@ public class EditPresetScreen extends Screen {
 
             public WaitTimeEntry(Minecraft minecraft, ConfigManager.ConfigData.TimeAction action, boolean lastActionEntry) {
                 super(minecraft, Component.translatable("clickguard.action.waitTime"), action, lastActionEntry);
-                waitTimeEditBox = new EditBox(minecraft.font, Component.translatable("clickguard.action.waitTime"));
+                waitTimeEditBox = new EditBox(minecraft.font, 0, 20, Component.translatable("clickguard.action.waitTime"));
                 waitTimeEditBox.setHint(Component.translatable("clickguard.action.waitTime.hint"));
                 waitTimeEditBox.setResponder(value -> {
                     if (value.isEmpty()) {

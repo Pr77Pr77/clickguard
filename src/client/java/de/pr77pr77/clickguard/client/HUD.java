@@ -3,7 +3,7 @@ package de.pr77pr77.clickguard.client;
 import net.minecraft.client.DeltaTracker;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
-import net.minecraft.client.gui.GuiGraphicsExtractor;
+import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.network.chat.Component;
 import net.minecraft.util.CommonColors;
 import net.minecraft.util.Util;
@@ -11,7 +11,7 @@ import net.minecraft.util.Util;
 import static de.pr77pr77.clickguard.client.ClickGuardClient.*;
 
 public class HUD {
-    public static void renderClickerHud(GuiGraphicsExtractor graphics, DeltaTracker tickCounter) {
+    public static void renderClickerHud(GuiGraphics graphics, DeltaTracker tickCounter) {
         if (!autoClickingEnabled && autoStoppedInfo == null) {
             return;
         }
@@ -23,16 +23,16 @@ public class HUD {
 
         if (autoStoppedInfo != null) {
             // Render auto stopped info:
-            graphics.text(font, Component.translatable("clickguard.action.hudStopped.title"), x, y, CommonColors.SOFT_YELLOW);
+            graphics.drawString(font, Component.translatable("clickguard.action.hudStopped.title"), x, y, CommonColors.SOFT_YELLOW);
             y += lineHeight;
-            graphics.text(font, autoStoppedInfo.reasonMessage, x, y, CommonColors.SOFT_YELLOW);
+            graphics.drawString(font, autoStoppedInfo.reasonMessage, x, y, CommonColors.SOFT_YELLOW);
             y += lineHeight;
-            graphics.text(font, Component.translatable("clickguard.action.hudStopped.subtitle", enableClickingKey.getTranslatedKeyMessage()), x, y, CommonColors.TEXT_GRAY);
+            graphics.drawString(font, Component.translatable("clickguard.action.hudStopped.subtitle", enableClickingKey.getTranslatedKeyMessage()), x, y, CommonColors.TEXT_GRAY);
             return;
         }
 
 
-        graphics.text(font, Component.translatable("clickguard.hud.title"), x, y, CommonColors.TEXT_GRAY);
+        graphics.drawString(font, Component.translatable("clickguard.hud.title"), x, y, CommonColors.TEXT_GRAY);
         y += lineHeight;
 
         for (Clicker clicker : clickers) {
@@ -45,14 +45,14 @@ public class HUD {
                         clicker.preset.name, Component.translatable(clicker.preset.keybind.getName()));
             };
 
-            graphics.text(font, text, x, y, CommonColors.TEXT_GRAY);
+            graphics.drawString(font, text, x, y, CommonColors.TEXT_GRAY);
             y += lineHeight;
         }
 
         if (clickers.isEmpty()) {
-            graphics.text(font, Component.translatable("clickguard.hud.noPresetsEnabled.line1"), x, y, CommonColors.TEXT_GRAY);
+            graphics.drawString(font, Component.translatable("clickguard.hud.noPresetsEnabled.line1"), x, y, CommonColors.TEXT_GRAY);
             y += lineHeight;
-            graphics.text(font, Component.translatable("clickguard.hud.noPresetsEnabled.line2", openPresetsScreen.getTranslatedKeyMessage()), x, y, CommonColors.TEXT_GRAY);
+            graphics.drawString(font, Component.translatable("clickguard.hud.noPresetsEnabled.line2", openPresetsScreen.getTranslatedKeyMessage()), x, y, CommonColors.TEXT_GRAY);
         }
 
         renderWarning(graphics);
@@ -67,7 +67,7 @@ public class HUD {
         warningStartTime = Util.getMillis();
     }
 
-    private static void renderWarning(GuiGraphicsExtractor graphics) {
+    private static void renderWarning(GuiGraphics graphics) {
         if (warningStartTime < 0) return;
 
         long elapsed = Util.getMillis() - warningStartTime;
@@ -93,6 +93,6 @@ public class HUD {
         int x = (graphics.guiWidth() - width) / 2;
         int y = graphics.guiHeight() / 3;
 
-        graphics.text(font, text, x, y, color);
+        graphics.drawString(font, text, x, y, color);
     }
 }

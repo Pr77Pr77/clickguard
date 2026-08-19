@@ -1,7 +1,7 @@
 package de.pr77pr77.clickguard.client;
 
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.gui.GuiGraphicsExtractor;
+import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.*;
 import net.minecraft.client.gui.components.events.GuiEventListener;
 import net.minecraft.client.gui.layouts.HeaderAndFooterLayout;
@@ -43,9 +43,9 @@ public class PresetsScreen extends Screen {
 
         LinearLayout footerButtons = LinearLayout.horizontal().spacing(8);
         footerButtons.addChild(Button.builder(CommonComponents.GUI_DONE,
-                _ -> onClose()).build());
+                button -> onClose()).build());
         startStopButton = Button.builder(getStartStopButtonComponent(),
-                _ -> toggleAutoClickingEnabled()).build();
+                button -> toggleAutoClickingEnabled()).build();
         startStopButton.active = minecraft.level != null;
         footerButtons.addChild(startStopButton);
         layout.addToFooter(footerButtons);
@@ -132,7 +132,7 @@ public class PresetsScreen extends Screen {
             private final Button button;
 
             private CreateButtonEntry() {
-                button = Button.builder(Component.translatable("clickguard.presets.new"), _ -> {
+                button = Button.builder(Component.translatable("clickguard.presets.new"), button -> {
                     Minecraft minecraft = Minecraft.getInstance();
                     minecraft.setScreen(new ChooseKeybindScreen(minecraft.screen));
                 }).build();
@@ -145,9 +145,9 @@ public class PresetsScreen extends Screen {
             }
 
             @Override
-            public void extractContent(@NonNull GuiGraphicsExtractor graphics, int mouseX, int mouseY, boolean hovered, float a) {
+            public void renderContent(@NonNull GuiGraphics graphics, int mouseX, int mouseY, boolean hovered, float a) {
                 button.setY(getContentY());
-                button.extractRenderState(graphics, mouseX, mouseY, a);
+                button.render(graphics, mouseX, mouseY, a);
             }
 
             @Override
@@ -184,7 +184,7 @@ public class PresetsScreen extends Screen {
                                 preset.enabled)
                         .withValues(List.of(Boolean.TRUE, Boolean.FALSE))
                         .displayOnlyValue()
-                        .create(0, 0, 0, 20, Component.translatable("manageServer.resourcePack.enabled"), (_, value) -> {
+                        .create(0, 0, 0, 20, Component.translatable("manageServer.resourcePack.enabled"), (button, value) -> {
                             preset.enabled = value;
                             ClickGuardClient.configManager.save();
 
@@ -198,9 +198,9 @@ public class PresetsScreen extends Screen {
                             }
                         }); // Position and size set in init
                 editButton = Button.builder(Component.translatable("selectServer.edit"),
-                        _ -> minecraft.setScreen(new EditPresetScreen(parentScreen, preset))).build();
+                        button -> minecraft.setScreen(new EditPresetScreen(parentScreen, preset))).build();
                 deleteButton = Button.builder(Component.translatable("selectServer.delete"),
-                        _ -> minecraft.setScreen(new ConfirmScreen(answer -> {
+                        button -> minecraft.setScreen(new ConfirmScreen(answer -> {
                             if (answer) {
                                 ClickGuardClient.configManager.data.presets.remove(preset);
                                 ClickGuardClient.configManager.save();
@@ -231,7 +231,7 @@ public class PresetsScreen extends Screen {
             }
 
             @Override
-            public void extractContent(@NonNull GuiGraphicsExtractor graphics, int mouseX, int mouseY, boolean hovered, float a) {
+            public void renderContent(@NonNull GuiGraphics graphics, int mouseX, int mouseY, boolean hovered, float a) {
                 graphics.fill(getContentX(), getContentY(), getContentX() + getContentWidth(), getContentY() + getContentHeight(), 0x44000000);
 
                 deleteButton.setY(getContentYMiddle() - 10);
@@ -241,12 +241,12 @@ public class PresetsScreen extends Screen {
                 name.setY(getContentY() + 4);
                 keybindAndBriefOptions.setY(name.getBottom());
 
-                deleteButton.extractRenderState(graphics, mouseX, mouseY, a);
-                editButton.extractRenderState(graphics, mouseX, mouseY, a);
-                enableButton.extractRenderState(graphics, mouseX, mouseY, a);
+                deleteButton.render(graphics, mouseX, mouseY, a);
+                editButton.render(graphics, mouseX, mouseY, a);
+                enableButton.render(graphics, mouseX, mouseY, a);
 
-                name.extractRenderState(graphics, mouseX, mouseY, a);
-                keybindAndBriefOptions.extractRenderState(graphics, mouseX, mouseY, a);
+                name.render(graphics, mouseX, mouseY, a);
+                keybindAndBriefOptions.render(graphics, mouseX, mouseY, a);
             }
 
             @Override

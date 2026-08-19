@@ -2,7 +2,7 @@ package de.pr77pr77.clickguard.client;
 
 import net.minecraft.client.KeyMapping;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.gui.GuiGraphicsExtractor;
+import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.*;
 import net.minecraft.client.gui.components.events.GuiEventListener;
 import net.minecraft.client.gui.layouts.HeaderAndFooterLayout;
@@ -56,7 +56,7 @@ public class EditPresetScreen extends Screen {
         addOptions();
 
         layout.addToFooter(Button.builder(CommonComponents.GUI_DONE,
-                _ -> onClose()).build());
+                button -> onClose()).build());
 
         layout.visitWidgets(this::addRenderableWidget);
         repositionElements();
@@ -72,7 +72,7 @@ public class EditPresetScreen extends Screen {
                     }
                 });
         list.addButon(Component.translatable("clickguard.keybind.label", Component.translatable(preset.keybind.getName())),
-                (_, _) -> minecraft.setScreen(new ChooseKeybindScreen(this, preset)));
+                (button, buttonEntry) -> minecraft.setScreen(new ChooseKeybindScreen(this, preset)));
         list.addClickingTypeEntry(preset);
         list.addFilterEntry(preset);
 
@@ -85,7 +85,7 @@ public class EditPresetScreen extends Screen {
         if (preset.healthActions == null) {
             preset.healthActions = new ArrayList<>();
         }
-        list.addInnerButon(Component.translatable("clickguard.action.health.addButton"), (_, buttonEntry) -> {
+        list.addInnerButon(Component.translatable("clickguard.action.health.addButton"), (button, buttonEntry) -> {
             ConfigManager.ConfigData.SliderAction healthAction = new ConfigManager.ConfigData.SliderAction();
             preset.healthActions.add(healthAction);
             list.insertIconSliderActionEntry(healthAction, false,
@@ -98,7 +98,7 @@ public class EditPresetScreen extends Screen {
         if (preset.hungerActions == null) {
             preset.hungerActions = new ArrayList<>();
         }
-        list.addInnerButon(Component.translatable("clickguard.action.hunger.addButton"), (_, buttonEntry) -> {
+        list.addInnerButon(Component.translatable("clickguard.action.hunger.addButton"), (button, buttonEntry) -> {
             ConfigManager.ConfigData.SliderAction hungerAction = new ConfigManager.ConfigData.SliderAction();
             preset.hungerActions.add(hungerAction);
             list.insertIconSliderActionEntry(hungerAction, false,
@@ -112,7 +112,7 @@ public class EditPresetScreen extends Screen {
         if (preset.durabilityActions == null) {
             preset.durabilityActions = new ArrayList<>();
         }
-        list.addInnerButon(Component.translatable("clickguard.action.durability.addButton"), (_, buttonEntry) -> {
+        list.addInnerButon(Component.translatable("clickguard.action.durability.addButton"), (button, buttonEntry) -> {
             ConfigManager.ConfigData.FractionAction durabilityAction = new ConfigManager.ConfigData.FractionAction();
             preset.durabilityActions.add(durabilityAction);
             list.insertFractionSliderEntry(durabilityAction,
@@ -128,7 +128,7 @@ public class EditPresetScreen extends Screen {
         if (preset.waitTimeActions == null) {
             preset.waitTimeActions = new ArrayList<>();
         }
-        list.addInnerButon(Component.translatable("clickguard.action.waitTime.addButton"), (_, buttonEntry) -> {
+        list.addInnerButon(Component.translatable("clickguard.action.waitTime.addButton"), (button, buttonEntry) -> {
             ConfigManager.ConfigData.TimeAction waitTimeAction = new ConfigManager.ConfigData.TimeAction();
             preset.waitTimeActions.add(waitTimeAction);
             list.insertWaitTimeEntry(waitTimeAction,
@@ -404,12 +404,12 @@ public class EditPresetScreen extends Screen {
             }
 
             @Override
-            public void extractContent(@NonNull GuiGraphicsExtractor graphics, int mouseX, int mouseY, boolean hovered, float a) {
+            public void renderContent(@NonNull GuiGraphics graphics, int mouseX, int mouseY, boolean hovered, float a) {
                 if (innerButton) {
                     graphics.fill(getContentX(), getY(), getContentRight(), lastBoxEntry ? getContentBottom() : getY() + getHeight(), 0x44000000);
                 }
                 button.setY(getContentY());
-                button.extractRenderState(graphics, mouseX, mouseY, a);
+                button.render(graphics, mouseX, mouseY, a);
             }
 
             @Override
@@ -450,9 +450,9 @@ public class EditPresetScreen extends Screen {
             }
 
             @Override
-            public void extractContent(@NonNull GuiGraphicsExtractor graphics, int mouseX, int mouseY, boolean hovered, float a) {
+            public void renderContent(@NonNull GuiGraphics graphics, int mouseX, int mouseY, boolean hovered, float a) {
                 graphics.fill(getContentX(), getContentY(), getContentRight(), getContentBottom(), 0x44000000);
-                graphics.text(
+                graphics.drawString(
                         minecraft.font,
                         label,
                         getContentX() + 2,
@@ -461,7 +461,7 @@ public class EditPresetScreen extends Screen {
                         true
                 );
                 editBox.setY(getContentY() + 10 + 2);
-                editBox.extractRenderState(graphics, mouseX, mouseY, a);
+                editBox.render(graphics, mouseX, mouseY, a);
             }
 
             @Override
@@ -613,7 +613,7 @@ public class EditPresetScreen extends Screen {
                         .withValues(preset.keybind.getName().equals("key.attack") ? Arrays.asList(ConfigManager.ConfigData.ClickingType.values()) :
                                 List.of(ConfigManager.ConfigData.ClickingType.CUSTOM_TIMING, ConfigManager.ConfigData.ClickingType.CONTINUOUS))
                         .create(0, 0, 0, 20, Component.translatable("clickguard.type.description"),
-                                (_, value) -> {
+                                (button, value) -> {
                                     this.preset.clickingType = value;
                                     changeEditBoxes(value);
                                 }); // Position and size set in init
@@ -682,13 +682,13 @@ public class EditPresetScreen extends Screen {
             }
 
             @Override
-            public void extractContent(@NonNull GuiGraphicsExtractor graphics, int mouseX, int mouseY, boolean hovered, float a) {
+            public void renderContent(@NonNull GuiGraphics graphics, int mouseX, int mouseY, boolean hovered, float a) {
                 graphics.fill(getContentX(), getContentY(), getContentRight(), getContentBottom(), 0x44000000);
 
                 typeButton.setY(getContentY() + 2);
-                typeButton.extractRenderState(graphics, mouseX, mouseY, a);
+                typeButton.render(graphics, mouseX, mouseY, a);
 
-                graphics.text(
+                graphics.drawString(
                         minecraft.font,
                         Component.translatable("clickguard.timing.CPS"),
                         getContentX() + 2,
@@ -697,9 +697,9 @@ public class EditPresetScreen extends Screen {
                         true
                 );
                 cpsEditBox.setY(getContentY() + 2 + 20 + 5 + 10);
-                cpsEditBox.extractRenderState(graphics, mouseX, mouseY, a);
+                cpsEditBox.render(graphics, mouseX, mouseY, a);
 
-                graphics.text(
+                graphics.drawString(
                         minecraft.font,
                         Component.translatable("clickguard.timing.interval"),
                         getContentX() + 2,
@@ -708,9 +708,9 @@ public class EditPresetScreen extends Screen {
                         true
                 );
                 intervalEditBox.setY(getContentY() + 2 + 20 + 5 + 10 + 20 + 5 + 10);
-                intervalEditBox.extractRenderState(graphics, mouseX, mouseY, a);
+                intervalEditBox.render(graphics, mouseX, mouseY, a);
 
-                graphics.text(
+                graphics.drawString(
                         minecraft.font,
                         Component.translatable("clickguard.timing.duration"),
                         getContentX() + 2,
@@ -719,7 +719,7 @@ public class EditPresetScreen extends Screen {
                         true
                 );
                 durationEditBox.setY(getContentY() + 2 + 20 + 5 + 10 + 20 + 5 + 10 + 20 + 5 + 10);
-                durationEditBox.extractRenderState(graphics, mouseX, mouseY, a);
+                durationEditBox.render(graphics, mouseX, mouseY, a);
             }
 
             @Override
@@ -741,9 +741,9 @@ public class EditPresetScreen extends Screen {
             public FilterEntry(Minecraft minecraft, ConfigManager.ConfigData.Preset preset) { // Sets the value to preset
                 this.minecraft = minecraft;
                 checkboxEntities = Checkbox.builder(Component.translatable("clickguard.filter.entities"), minecraft.font)
-                        .selected(preset.filterEntities).onValueChange((_, value) -> preset.filterEntities = value).build();
+                        .selected(preset.filterEntities).onValueChange((checkbox, value) -> preset.filterEntities = value).build();
                 checkboxBlocks = Checkbox.builder(Component.translatable("clickguard.filter.blocks"), minecraft.font)
-                        .selected(preset.filterBlocks).onValueChange((_, value) -> preset.filterBlocks = value).build();
+                        .selected(preset.filterBlocks).onValueChange((ceckbox, value) -> preset.filterBlocks = value).build();
             }
 
             @Override
@@ -755,9 +755,9 @@ public class EditPresetScreen extends Screen {
             }
 
             @Override
-            public void extractContent(@NonNull GuiGraphicsExtractor graphics, int mouseX, int mouseY, boolean hovered, float a) {
+            public void renderContent(@NonNull GuiGraphics graphics, int mouseX, int mouseY, boolean hovered, float a) {
                 graphics.fill(getContentX(), getContentY(), getContentRight(), getContentBottom(), 0x44000000);
-                graphics.text(
+                graphics.drawString(
                         minecraft.font,
                         Component.translatable("clickguard.filter.title"),
                         getContentX() + 2,
@@ -768,11 +768,11 @@ public class EditPresetScreen extends Screen {
 
                 checkboxEntities.setY(getContentY() + 2 + minecraft.font.lineHeight + 2);
                 checkboxEntities.setWidth(getContentWidth() - 4);
-                checkboxEntities.extractContents(graphics, mouseX, mouseY, a);
+                checkboxEntities.renderContents(graphics, mouseX, mouseY, a);
 
                 checkboxBlocks.setY(checkboxEntities.getBottom() + 2);
                 checkboxBlocks.setWidth(getContentWidth() - 4);
-                checkboxBlocks.extractContents(graphics, mouseX, mouseY, a);
+                checkboxBlocks.renderContents(graphics, mouseX, mouseY, a);
             }
 
             @Override
@@ -800,9 +800,9 @@ public class EditPresetScreen extends Screen {
             }
 
             @Override
-            public void extractContent(GuiGraphicsExtractor graphics, int mouseX, int mouseY, boolean hovered, float a) {
+            public void renderContent(@NonNull GuiGraphics graphics, int mouseX, int mouseY, boolean hovered, float a) {
                 graphics.fill(getContentX(), getContentY(), getContentRight(), getY() + getHeight(), 0x44000000);
-                graphics.text(
+                graphics.drawString(
                         minecraft.font,
                         label,
                         getContentX() + 2,
@@ -837,11 +837,11 @@ public class EditPresetScreen extends Screen {
             public AbstractActionEntry(Minecraft minecraft, Component label, ConfigManager.ConfigData.SimpleAction action, boolean lastActionEntry) {
                 this.minecraft = minecraft;
                 checkboxStopClicker = Checkbox.builder(Component.translatable("clickguard.action.option.stopClicker"), minecraft.font)
-                        .selected(action.stopClicker).onValueChange((_, value) -> action.stopClicker = value).build();
+                        .selected(action.stopClicker).onValueChange((checkbox, value) -> action.stopClicker = value).build();
                 checkboxNotification = Checkbox.builder(Component.translatable("clickguard.action.option.notification"), minecraft.font)
-                        .selected(action.notification).onValueChange((_, value) -> action.notification = value).build();
+                        .selected(action.notification).onValueChange((checkbox, value) -> action.notification = value).build();
                 checkboxLeave = Checkbox.builder(Component.translatable("clickguard.action.option.leave"), minecraft.font)
-                        .selected(action.leaveWorld).onValueChange((_, value) -> action.leaveWorld = value).build();
+                        .selected(action.leaveWorld).onValueChange((checkbox, value) -> action.leaveWorld = value).build();
                 this.label = label;
                 this.lastActionEntry = lastActionEntry;
             }
@@ -856,12 +856,12 @@ public class EditPresetScreen extends Screen {
                 checkboxLeave.setWidth(checkboxesWidth);
             }
 
-            public void extractBase(@NonNull GuiGraphicsExtractor graphics, int mouseX, int mouseY, float a, int checkboxesY) {
+            public void extractBase(@NonNull GuiGraphics graphics, int mouseX, int mouseY, float a, int checkboxesY) {
                 // General box, together with other
                 graphics.fill(getContentX(), getY(), getContentRight(), lastActionEntry ? getContentBottom() : getY() + getHeight(), 0x44000000);
                 // Own box:
                 graphics.fill(getContentX() + 2, getY() + 2, getContentRight() - 2, lastActionEntry ? (getContentBottom() - 2) : getContentBottom(), 0x44000000);
-                graphics.text(
+                graphics.drawString(
                         minecraft.font,
                         label,
                         getContentX() + 4,
@@ -871,13 +871,13 @@ public class EditPresetScreen extends Screen {
                 );
 
                 checkboxStopClicker.setY(checkboxesY);
-                checkboxStopClicker.extractContents(graphics, mouseX, mouseY, a);
+                checkboxStopClicker.renderContents(graphics, mouseX, mouseY, a);
 
                 checkboxNotification.setY(checkboxesY);
-                checkboxNotification.extractContents(graphics, mouseX, mouseY, a);
+                checkboxNotification.renderContents(graphics, mouseX, mouseY, a);
 
                 checkboxLeave.setY(checkboxesY);
-                checkboxLeave.extractContents(graphics, mouseX, mouseY, a);
+                checkboxLeave.renderContents(graphics, mouseX, mouseY, a);
             }
         }
 
@@ -892,7 +892,7 @@ public class EditPresetScreen extends Screen {
             }
 
             @Override
-            public void extractContent(@NonNull GuiGraphicsExtractor graphics, int mouseX, int mouseY, boolean hovered, float a) {
+            public void renderContent(@NonNull GuiGraphics graphics, int mouseX, int mouseY, boolean hovered, float a) {
                 extractBase(graphics, mouseX, mouseY, a, getContentY() + 2 + minecraft.font.lineHeight + 2);
             }
 
@@ -953,11 +953,11 @@ public class EditPresetScreen extends Screen {
             }
 
             @Override
-            public void extractContent(@NonNull GuiGraphicsExtractor graphics, int mouseX, int mouseY, boolean hovered, float a) {
+            public void renderContent(@NonNull GuiGraphics graphics, int mouseX, int mouseY, boolean hovered, float a) {
                 extractBase(graphics, mouseX, mouseY, a, getContentY() + 2 + minecraft.font.lineHeight + 2 + slider.getHeight() + 2);
 
                 slider.setY(getContentY() + 2 + minecraft.font.lineHeight + 2);
-                slider.extractRenderState(graphics, mouseX, mouseY, a);
+                slider.renderWidget(graphics, mouseX, mouseY, a);
             }
 
             @Override
@@ -993,11 +993,11 @@ public class EditPresetScreen extends Screen {
             }
 
             @Override
-            public void extractContent(@NonNull GuiGraphicsExtractor graphics, int mouseX, int mouseY, boolean hovered, float a) {
+            public void renderContent(@NonNull GuiGraphics graphics, int mouseX, int mouseY, boolean hovered, float a) {
                 extractBase(graphics, mouseX, mouseY, a, getContentY() + 2 + minecraft.font.lineHeight + 2 + slider.getHeight() + 2);
 
                 slider.setY(getContentY() + 2 + minecraft.font.lineHeight + 2);
-                slider.extractRenderState(graphics, mouseX, mouseY, a);
+                slider.renderWidget(graphics, mouseX, mouseY, a);
             }
 
             @Override
@@ -1057,11 +1057,11 @@ public class EditPresetScreen extends Screen {
             }
 
             @Override
-            public void extractContent(@NonNull GuiGraphicsExtractor graphics, int mouseX, int mouseY, boolean hovered, float a) {
+            public void renderContent(@NonNull GuiGraphics graphics, int mouseX, int mouseY, boolean hovered, float a) {
                 extractBase(graphics, mouseX, mouseY, a, getContentY() + 2 + minecraft.font.lineHeight + 2 + waitTimeEditBox.getHeight() + 2);
 
                 waitTimeEditBox.setY(getContentY() + 2 + minecraft.font.lineHeight + 2);
-                waitTimeEditBox.extractRenderState(graphics, mouseX, mouseY, a);
+                waitTimeEditBox.renderWidget(graphics, mouseX, mouseY, a);
             }
 
             @Override

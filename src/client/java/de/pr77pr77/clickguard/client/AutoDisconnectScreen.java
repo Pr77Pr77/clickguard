@@ -2,7 +2,7 @@ package de.pr77pr77.clickguard.client;
 
 import net.minecraft.ChatFormatting;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.gui.GuiGraphicsExtractor;
+import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.components.MultiLineTextWidget;
 import net.minecraft.client.gui.screens.Screen;
@@ -68,7 +68,7 @@ public class AutoDisconnectScreen extends Screen {
         addRenderableWidget(textWidget);
 
         toTitleScreenButton = Button.builder(Component.translatable("clickguard.autoDisconnectScreen.toTitleScreen"),
-                        _ -> Minecraft.getInstance().setScreen(new TitleScreen()))
+                        button -> Minecraft.getInstance().setScreen(new TitleScreen()))
                 .bounds((width - 150) / 2, textWidget.getBottom() + 20, 150, 20).build();
         addRenderableWidget(toTitleScreenButton);
 
@@ -87,8 +87,8 @@ public class AutoDisconnectScreen extends Screen {
     }
 
     @Override
-    public void extractRenderState(final @NonNull GuiGraphicsExtractor graphics, final int mouseX, final int mouseY, final float a) {
-        super.extractRenderState(graphics, mouseX, mouseY, a);
+    public void render(final @NonNull GuiGraphics graphics, final int mouseX, final int mouseY, final float a) {
+        super.render(graphics, mouseX, mouseY, a);
 
         boolean isHovered = isMouseOverTitle(mouseX, mouseY);
 
@@ -99,7 +99,7 @@ public class AutoDisconnectScreen extends Screen {
         int titleY = titleBaseY - (int) titleOffsetY;
 
         if (titleOffsetY > TARGET_OFFSET * 0.20f) {
-            graphics.centeredText(font, Component.translatable("clickguard.autoDisconnectScreen.hiddenText." + (hoverTriggerCount + 1)), width / 2, titleBaseY + TITLE_HEIGHT - 20, CommonColors.TEXT_GRAY);
+            graphics.drawCenteredString(font, Component.translatable("clickguard.autoDisconnectScreen.hiddenText." + (hoverTriggerCount + 1)), width / 2, titleBaseY + TITLE_HEIGHT - 20, CommonColors.TEXT_GRAY);
         }
 
         graphics.blit(RenderPipelines.GUI_TEXTURED, id("textures/gui/title/clickguard.png"), titleX, titleY, 0, 0, TITLE_WIDTH, TITLE_HEIGHT, TITLE_WIDTH, TITLE_HEIGHT);

@@ -30,7 +30,7 @@ public class ConfigManager {
 
     ConfigManager() {
         filePath = FabricLoader.getInstance().getConfigDir().resolve("clickguard.json");
-        ClientLifecycleEvents.CLIENT_STARTED.register(_ -> load());
+        ClientLifecycleEvents.CLIENT_STARTED.register(minecraft -> load());
     }
 
     public static class ConfigData {

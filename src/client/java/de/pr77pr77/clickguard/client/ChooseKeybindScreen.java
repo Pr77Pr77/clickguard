@@ -2,7 +2,7 @@ package de.pr77pr77.clickguard.client;
 
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.KeyMapping;
-import net.minecraft.client.gui.GuiGraphicsExtractor;
+import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.components.ContainerObjectSelectionList;
 import net.minecraft.client.gui.components.events.GuiEventListener;
@@ -44,7 +44,7 @@ public class ChooseKeybindScreen extends Screen {
         list.fillList();
 
         LinearLayout footerButtons = LinearLayout.horizontal().spacing(8);
-        footerButtons.addChild(Button.builder(CommonComponents.GUI_CANCEL, _ -> onClose()).build());
+        footerButtons.addChild(Button.builder(CommonComponents.GUI_CANCEL, button -> onClose()).build());
         layout.addToFooter(footerButtons);
 
         layout.visitWidgets(this::addRenderableWidget);
@@ -113,7 +113,7 @@ public class ChooseKeybindScreen extends Screen {
                 this.minecraft = minecraft;
                 this.keyMapping = keyMapping;
                 this.selectButton = Button.builder(Component.translatable("clickguard.keybind.select"),
-                        _ -> onSelect.accept(keyMapping)).build(); // Size and position are set in init()
+                        button -> onSelect.accept(keyMapping)).build(); // Size and position are set in init()
             }
 
             void init() {
@@ -124,16 +124,16 @@ public class ChooseKeybindScreen extends Screen {
             }
 
             @Override
-            public void extractContent(@NonNull GuiGraphicsExtractor graphics, int mouseX, int mouseY, boolean hovered, float a) {
+            public void renderContent(@NonNull GuiGraphics graphics, int mouseX, int mouseY, boolean hovered, float a) {
                 int textX = getContentX() + 8;
                 int textY = getContentY() + (getContentHeight() - minecraft.font.lineHeight * 2 - 2) / 2;
 
                 graphics.fill(getContentX(), getContentY(), getContentX() + getContentWidth(), getContentY() + getContentHeight(), 0x44000000);
 
-                graphics.text(minecraft.font, Component.translatable(keyMapping.getName()), textX, textY, 0xFFFFFFFF, true);
-                graphics.text(minecraft.font, keyMapping.getTranslatedKeyMessage(), textX, textY + minecraft.font.lineHeight + 2, 0xFFAAAAAA, true);
+                graphics.drawString(minecraft.font, Component.translatable(keyMapping.getName()), textX, textY, 0xFFFFFFFF, true);
+                graphics.drawString(minecraft.font, keyMapping.getTranslatedKeyMessage(), textX, textY + minecraft.font.lineHeight + 2, 0xFFAAAAAA, true);
                 selectButton.setY(getContentY() + (getContentHeight() - selectButton.getHeight()) / 2);
-                selectButton.extractRenderState(graphics, mouseX, mouseY, a);
+                selectButton.render(graphics, mouseX, mouseY, a);
             }
 
             @Override

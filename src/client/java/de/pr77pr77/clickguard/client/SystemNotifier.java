@@ -1,7 +1,6 @@
 package de.pr77pr77.clickguard.client;
 
-import net.minecraft.client.Minecraft;
-import org.lwjgl.glfw.GLFW;
+import net.minecraft.SharedConstants;
 
 import java.awt.*;
 import java.io.BufferedReader;
@@ -84,10 +83,9 @@ public class SystemNotifier {
         pb.start();
     }
 
-    private static String getMinecraftWindowTitle() {
-        long windowHandle = Minecraft.getInstance().getWindow().handle();
-        String title = GLFW.glfwGetWindowTitle(windowHandle);
-        return title != null ? title : "Minecraft"; // Fallback
+    public static String getMinecraftWindowTitle() {
+        // Simplified method of getting a title for the notification:
+        return "Minecraft " + SharedConstants.getCurrentVersion().name();
     }
 
     private static volatile String cachedUid = null;

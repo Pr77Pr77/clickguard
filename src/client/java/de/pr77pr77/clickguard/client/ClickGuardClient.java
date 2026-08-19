@@ -3,11 +3,11 @@ package de.pr77pr77.clickguard.client;
 import com.mojang.blaze3d.platform.InputConstants;
 import net.fabricmc.api.ClientModInitializer;
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents;
-import net.fabricmc.fabric.api.client.keymapping.v1.KeyMappingHelper;
+import net.fabricmc.fabric.api.client.keybinding.v1.KeyBindingHelper;
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayConnectionEvents;
 import net.fabricmc.fabric.api.client.rendering.v1.hud.HudElementRegistry;
 import net.fabricmc.fabric.api.client.rendering.v1.hud.VanillaHudElements;
-import net.fabricmc.fabric.api.client.rendering.v1.level.LevelRenderEvents;
+import net.fabricmc.fabric.api.client.rendering.v1.world.WorldRenderEvents;
 import net.minecraft.client.KeyMapping;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.narration.NarratableEntry;
@@ -40,7 +40,7 @@ public class ClickGuardClient implements ClientModInitializer {
     @Override
     public void onInitializeClient() {
         KeyMapping.Category clickGuardKeybindCategory = new KeyMapping.Category(Identifier.fromNamespaceAndPath("clickguard", "clickguard"));
-        openPresetsScreen = KeyMappingHelper.registerKeyMapping(new KeyMapping(
+        openPresetsScreen = KeyBindingHelper.registerKeyBinding(new KeyMapping(
                 "key.clickguard.openPresetsScreen",
                 InputConstants.Type.KEYSYM,
                 GLFW.GLFW_KEY_COMMA,
@@ -56,7 +56,7 @@ public class ClickGuardClient implements ClientModInitializer {
             }
         });
 
-        enableClickingKey = KeyMappingHelper.registerKeyMapping(new KeyMapping(
+        enableClickingKey = KeyBindingHelper.registerKeyBinding(new KeyMapping(
                 "key.clickguard.toggleClicking",
                 InputConstants.Type.KEYSYM,
                 GLFW.GLFW_KEY_PERIOD,
@@ -72,14 +72,14 @@ public class ClickGuardClient implements ClientModInitializer {
             }
         });
 
-        LevelRenderEvents.START_MAIN.register(_ -> {
+        WorldRenderEvents.START_MAIN.register(context -> {
             if (autoClickingEnabled || autoStoppedInfo != null) {
                 for (Clicker clicker : clickers) {
                     if (autoClickingEnabled) {
                         clicker.handleAutomaticClicks();
                     }
 
-                    if(!(Minecraft.getInstance().screen instanceof EditPresetScreen) && !(Minecraft.getInstance().screen instanceof PresetsScreen)) {
+                    if (!(Minecraft.getInstance().screen instanceof EditPresetScreen) && !(Minecraft.getInstance().screen instanceof PresetsScreen)) {
                         AutoStoppedInfo info = clicker.checkActions();
                         if (info != null && autoStoppedInfo == null) {
                             autoStoppedInfo = info;
@@ -105,7 +105,7 @@ public class ClickGuardClient implements ClientModInitializer {
             }
         });
 
-        ClientPlayConnectionEvents.DISCONNECT.register((_, _) -> {
+        ClientPlayConnectionEvents.DISCONNECT.register((listener, minecraft) -> {
             // Reset the auto clickers after disconnect.
             autoClickingEnabled = false;
             for (Clicker clicker : clickers) {

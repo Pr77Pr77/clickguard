@@ -1,6 +1,6 @@
 package de.pr77pr77.clickguard.client;
 
-import net.minecraft.client.gui.GuiGraphicsExtractor;
+import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.AbstractSliderButton;
 import net.minecraft.client.gui.components.Tooltip;
 import net.minecraft.client.input.KeyEvent;
@@ -60,7 +60,7 @@ public class IconSlider extends AbstractSliderButton {
     }
 
     @Override
-    public void extractWidgetRenderState(final GuiGraphicsExtractor graphics, final int mouseX, final int mouseY, final float a) {
+    public void renderWidget(final GuiGraphics graphics, final int mouseX, final int mouseY, final float a) {
         graphics.blitSprite(RenderPipelines.GUI_TEXTURED, getSprite(), getX(), getY(), getWidth(), getHeight(), ARGB.white(alpha));
         for (int iconIndex = 0; iconIndex < this.maxShownPoints / 2; ++iconIndex) {
             // Always render the empty icon below:
@@ -85,7 +85,7 @@ public class IconSlider extends AbstractSliderButton {
         this.handleCursor(graphics);
     }
 
-    private void extractHandle(final GuiGraphicsExtractor graphics) {
+    private void extractHandle(final GuiGraphics graphics) {
         int spriteX = this.getX() + (int) (this.value * (double) (this.width - HANDLE_WIDTH));
 
         // Top:

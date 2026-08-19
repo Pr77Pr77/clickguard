@@ -1,15 +1,12 @@
 package de.pr77pr77.clickguard.client;
 
+import com.sun.jna.Library;
+import com.sun.jna.Native;
+import com.sun.jna.Pointer;
+import com.sun.jna.Structure;
+import com.sun.jna.win32.StdCallLibrary;
 import net.minecraft.client.Minecraft;
 import org.lwjgl.glfw.GLFW;
-
-import java.awt.*;
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStreamReader;
-import java.nio.charset.StandardCharsets;
-import java.util.Base64;
-import java.util.Map;
 
 import static de.pr77pr77.clickguard.ClickGuard.LOGGER;
 
@@ -31,87 +28,177 @@ public class SystemNotifier {
         }
     }
 
+
+    // Windows:
+    private interface User32 extends StdCallLibrary {
+        User32 INSTANCE = Native.load("user32", User32.class);
+
+        Pointer GetForegroundWindow();
+
+        Pointer LoadIconW(Pointer hInstance, Pointer lpIconName);
+    }
+
+    private interface Shell32 extends StdCallLibrary {
+        Shell32 INSTANCE = Native.load("shell32", Shell32.class);
+
+        boolean Shell_NotifyIconW(int dwMessage, NOTIFYICONDATAW lpData);
+    }
+
+    @Structure.FieldOrder({
+            "cbSize", "hWnd", "uID", "uFlags", "uCallbackMessage",
+            "hIcon", "szTip", "dwState", "dwStateMask",
+            "szInfo", "uTimeoutOrVersion", "szInfoTitle", "dwInfoFlags"
+    })
+    public static class NOTIFYICONDATAW extends Structure {
+        public int cbSize;
+        public Pointer hWnd;
+        public int uID = 1001;
+        public int uFlags = 0;
+        public int uCallbackMessage = 0x0401; // WM_USER + 1
+        public Pointer hIcon = null;
+        public char[] szTip = new char[128];
+        public int dwState = 0;
+        public int dwStateMask = 0;
+        public char[] szInfo = new char[256];
+        public int uTimeoutOrVersion = 10000;
+        public char[] szInfoTitle = new char[64];
+        public int dwInfoFlags = 1; // NIIF_INFO
+
+        public NOTIFYICONDATAW() {
+            this.cbSize = this.size();
+        }
+    }
+
     public static void notifyWindows(String title, String message) {
         new Thread(() -> {
             try {
-                String appName = getMinecraftWindowTitle();
+                NOTIFYICONDATAW data = new NOTIFYICONDATAW();
 
-                String safeAppName = appName.replace("'", "''");
-                String safeTitle = title.replace("&", "&amp;").replace("<", "&lt;").replace(">", "&gt;");
-                String safeMessage = message.replace("&", "&amp;").replace("<", "&lt;").replace(">", "&gt;");
+                // Set window
+                data.hWnd = User32.INSTANCE.GetForegroundWindow();
 
-                String script = String.format(
-                        "$regPath = 'HKCU:\\Software\\Classes\\AppUserModelId\\MinecraftApp'; " +
-                                "if (!(Test-Path $regPath)) { New-Item -Path $regPath -Force | Out-Null; } " +
-                                "Set-ItemProperty -Path $regPath -Name 'DisplayName' -Value '%s' -Force | Out-Null; " +
-                                "[Windows.UI.Notifications.ToastNotificationManager, Windows.UI.Notifications, ContentType = WindowsRuntime] | Out-Null; " +
-                                "[Windows.Data.Xml.Dom.XmlDocument, Windows.Data.Xml.Dom.XmlDocument, ContentType = WindowsRuntime] | Out-Null; " +
-                                "$xml = New-Object Windows.Data.Xml.Dom.XmlDocument; " +
-                                "$xml.LoadXml('<toast><visual><binding template=\"ToastGeneric\"><text>%s</text><text>%s</text></binding></visual></toast>'); " +
-                                "$toast = [Windows.UI.Notifications.ToastNotification]::new($xml); " +
-                                "[Windows.UI.Notifications.ToastNotificationManager]::CreateToastNotifier('MinecraftApp').Show($toast); ",
-                        safeAppName, safeTitle, safeMessage
-                );
+                // Only register icon
+                data.uFlags = 0x02 | 0x04; // NIF_ICON | NIF_TIP
+                data.hIcon = User32.INSTANCE.LoadIconW(null, new Pointer(32516)); // Info-Symbol
 
-                byte[] utf16Bytes = script.getBytes(StandardCharsets.UTF_16LE);
-                String encodedScript = Base64.getEncoder().encodeToString(utf16Bytes);
+                char[] tipChars = "ClickGuard".toCharArray();
+                System.arraycopy(tipChars, 0, data.szTip, 0, tipChars.length);
 
-                ProcessBuilder pb = new ProcessBuilder("powershell", "-NoProfile", "-WindowStyle", "Hidden", "-EncodedCommand", encodedScript);
-                pb.start();
+                // NIM_ADD (0): create icon
+                Shell32.INSTANCE.Shell_NotifyIconW(0, data);
 
-            } catch (Exception e) {
-                LOGGER.error("Could not send system notification: ", e);
+                Thread.sleep(150);
+
+                // Add notification
+                data.uFlags = 0x10;
+
+                char[] titleChars = title.toCharArray();
+                System.arraycopy(titleChars, 0, data.szInfoTitle, 0, Math.min(titleChars.length, 63));
+
+                char[] msgChars = message.toCharArray();
+                System.arraycopy(msgChars, 0, data.szInfo, 0, Math.min(msgChars.length, 255));
+
+                // NIM_MODIFY (1) - Fire toast
+                Shell32.INSTANCE.Shell_NotifyIconW(1, data);
+
+                Thread.sleep(30000);
+
+                // NIM_DELETE (2)
+                Shell32.INSTANCE.Shell_NotifyIconW(2, data);
+            } catch (Throwable t) {
+                LOGGER.error("Could not send system notification: ", t);
             }
         }).start();
     }
 
-    private static void notifyLinux(String title, String message) throws IOException {
-        String appName = getMinecraftWindowTitle();
+    // Linux:
+    private interface LibNotify extends Library {
+        LibNotify INSTANCE = Native.load("notify", LibNotify.class);
 
-        ProcessBuilder pb = new ProcessBuilder(
-                "notify-send",
-                "-a", appName,
-                title,
-                message
-        );
+        boolean notify_init(String appName);
 
-        Map<String, String> env = pb.environment();
-        String busAddr = env.get("DBUS_SESSION_BUS_ADDRESS");
-        if (busAddr == null || busAddr.isEmpty()) {
-            env.put("DBUS_SESSION_BUS_ADDRESS", "unix:path=/run/user/" + getLinuxUid() + "/bus");
-        }
+        Pointer notify_notification_new(String summary, String body, String icon);
 
-        pb.start();
+        void notify_notification_show(Pointer notification, Pointer error);
+    }
+
+    public static void notifyLinux(String title, String message) {
+        new Thread(() -> {
+            try {
+                if (LibNotify.INSTANCE.notify_init(getMinecraftWindowTitle())) {
+                    Pointer notification = LibNotify.INSTANCE.notify_notification_new(
+                            title,
+                            message,
+                            "applications-games"
+                    );
+
+                    LibNotify.INSTANCE.notify_notification_show(notification, null);
+                }
+            } catch (Throwable t) {
+                LOGGER.error("Could not send system notification: ", t);
+            }
+        }).start();
+    }
+
+    // Mac OS:
+
+    private interface ObjC extends Library {
+        ObjC INSTANCE = Native.load("objc", ObjC.class);
+
+        Pointer objc_getClass(String name);
+
+        Pointer sel_registerName(String name);
+
+        Pointer objc_msgSend(Pointer receiver, Pointer selector);
+
+        Pointer objc_msgSend(Pointer receiver, Pointer selector, Pointer arg1);
+
+        Pointer objc_msgSend(Pointer receiver, Pointer selector, String arg1);
+    }
+
+    public static void notifyMac(String title, String message) {
+        new Thread(() -> {
+            try {
+                ObjC runtime = ObjC.INSTANCE;
+
+                // NSUserNotification alloc & init
+                Pointer notificationClass = runtime.objc_getClass("NSUserNotification");
+                Pointer allocSel = runtime.sel_registerName("alloc");
+                Pointer initSel = runtime.sel_registerName("init");
+
+                Pointer allocated = runtime.objc_msgSend(notificationClass, allocSel);
+                Pointer notification = runtime.objc_msgSend(allocated, initSel);
+
+                // generate NSStrings
+                Pointer stringClass = runtime.objc_getClass("NSString");
+                Pointer stringWithUtf8Sel = runtime.sel_registerName("stringWithUTF8String:");
+
+                Pointer nsTitle = runtime.objc_msgSend(stringClass, stringWithUtf8Sel, title);
+                Pointer nsMessage = runtime.objc_msgSend(stringClass, stringWithUtf8Sel, message);
+
+                // set values
+                Pointer setTitleSel = runtime.sel_registerName("setTitle:");
+                Pointer setInformativeTextSel = runtime.sel_registerName("setInformativeText:");
+
+                runtime.objc_msgSend(notification, setTitleSel, nsTitle);
+                runtime.objc_msgSend(notification, setInformativeTextSel, nsMessage);
+
+                // send notification
+                Pointer centerClass = runtime.objc_getClass("NSUserNotificationCenter");
+                Pointer defaultCenterSel = runtime.sel_registerName("defaultUserNotificationCenter");
+                Pointer center = runtime.objc_msgSend(centerClass, defaultCenterSel);
+
+                Pointer deliverNotificationSel = runtime.sel_registerName("deliverNotification:");
+                runtime.objc_msgSend(center, deliverNotificationSel, notification);
+            } catch (Throwable t) {
+                LOGGER.error("Could not send system notification: ", t);
+            }
+        }).start();
     }
 
     private static String getMinecraftWindowTitle() {
         long windowHandle = Minecraft.getInstance().getWindow().handle();
         String title = GLFW.glfwGetWindowTitle(windowHandle);
         return title != null ? title : "Minecraft"; // Fallback
-    }
-
-    private static volatile String cachedUid = null;
-
-    private static String getLinuxUid() throws IOException {
-        if (cachedUid != null) return cachedUid;
-
-        Process process = new ProcessBuilder("id", "-u").start();
-        try (BufferedReader reader = new BufferedReader(new InputStreamReader(process.getInputStream()))) {
-            String uid = reader.readLine();
-            if (uid == null || uid.isBlank()) {
-                throw new IOException("Could not determine uid");
-            }
-            cachedUid = uid.trim();
-            return cachedUid;
-        }
-    }
-
-    private static void notifyMac(String title, String message) throws IOException {
-        String script = String.format(
-                "display notification \"%s\" with title \"%s\"",
-                message.replace("\"", "\\\""),
-                title.replace("\"", "\\\"")
-        );
-        new ProcessBuilder("osascript", "-e", script).start();
     }
 }

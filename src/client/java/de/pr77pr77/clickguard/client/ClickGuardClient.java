@@ -16,8 +16,8 @@ import net.minecraft.client.gui.narration.NarrationElementOutput;
 import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
-import net.minecraft.resources.Identifier;
-import org.jspecify.annotations.NonNull;
+import net.minecraft.resources.ResourceLocation;
+import org.jetbrains.annotations.NotNull;
 import org.lwjgl.glfw.GLFW;
 
 import java.util.ArrayList;
@@ -26,6 +26,8 @@ import java.util.List;
 import static de.pr77pr77.clickguard.ClickGuard.id;
 
 public class ClickGuardClient implements ClientModInitializer {
+    public static final int TEXT_GRAY = 0xFFE0E0E0;
+
     public static KeyMapping openPresetsScreen;
     public static KeyMapping enableClickingKey;
 
@@ -39,7 +41,7 @@ public class ClickGuardClient implements ClientModInitializer {
 
     @Override
     public void onInitializeClient() {
-        KeyMapping.Category clickGuardKeybindCategory = new KeyMapping.Category(Identifier.fromNamespaceAndPath("clickguard", "clickguard"));
+        KeyMapping.Category clickGuardKeybindCategory = new KeyMapping.Category(ResourceLocation.fromNamespaceAndPath("clickguard", "clickguard"));
         openPresetsScreen = KeyBindingHelper.registerKeyBinding(new KeyMapping(
                 "key.clickguard.openPresetsScreen",
                 InputConstants.Type.KEYSYM,
@@ -209,12 +211,12 @@ public class ClickGuardClient implements ClientModInitializer {
         }
         return new NarratableEntry() {
             @Override
-            public NarratableEntry.@NonNull NarrationPriority narrationPriority() {
+            public NarratableEntry.@NotNull NarrationPriority narrationPriority() {
                 return NarrationPriority.HOVERED;
             }
 
             @Override
-            public void updateNarration(@NonNull NarrationElementOutput output) {
+            public void updateNarration(@NotNull NarrationElementOutput output) {
                 output.add(NarratedElementType.TITLE, text);
             }
         };

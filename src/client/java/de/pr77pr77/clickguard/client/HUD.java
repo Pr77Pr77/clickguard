@@ -6,7 +6,7 @@ import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.network.chat.Component;
 import net.minecraft.util.CommonColors;
-import net.minecraft.util.Util;
+import net.minecraft.Util;
 
 import static de.pr77pr77.clickguard.client.ClickGuardClient.*;
 
@@ -27,12 +27,12 @@ public class HUD {
             y += lineHeight;
             graphics.drawString(font, autoStoppedInfo.reasonMessage, x, y, CommonColors.SOFT_YELLOW);
             y += lineHeight;
-            graphics.drawString(font, Component.translatable("clickguard.action.hudStopped.subtitle", enableClickingKey.getTranslatedKeyMessage()), x, y, CommonColors.TEXT_GRAY);
+            graphics.drawString(font, Component.translatable("clickguard.action.hudStopped.subtitle", enableClickingKey.getTranslatedKeyMessage()), x, y, TEXT_GRAY);
             return;
         }
 
 
-        graphics.drawString(font, Component.translatable("clickguard.hud.title"), x, y, CommonColors.TEXT_GRAY);
+        graphics.drawString(font, Component.translatable("clickguard.hud.title"), x, y, TEXT_GRAY);
         y += lineHeight;
 
         for (Clicker clicker : clickers) {
@@ -45,14 +45,14 @@ public class HUD {
                         clicker.preset.name, Component.translatable(clicker.preset.keybind.getName()));
             };
 
-            graphics.drawString(font, text, x, y, CommonColors.TEXT_GRAY);
+            graphics.drawString(font, text, x, y, TEXT_GRAY);
             y += lineHeight;
         }
 
         if (clickers.isEmpty()) {
-            graphics.drawString(font, Component.translatable("clickguard.hud.noPresetsEnabled.line1"), x, y, CommonColors.TEXT_GRAY);
+            graphics.drawString(font, Component.translatable("clickguard.hud.noPresetsEnabled.line1"), x, y, TEXT_GRAY);
             y += lineHeight;
-            graphics.drawString(font, Component.translatable("clickguard.hud.noPresetsEnabled.line2", openPresetsScreen.getTranslatedKeyMessage()), x, y, CommonColors.TEXT_GRAY);
+            graphics.drawString(font, Component.translatable("clickguard.hud.noPresetsEnabled.line2", openPresetsScreen.getTranslatedKeyMessage()), x, y, TEXT_GRAY);
         }
 
         renderWarning(graphics);

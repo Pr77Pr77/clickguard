@@ -10,10 +10,10 @@ import net.minecraft.client.gui.screens.TitleScreen;
 import net.minecraft.client.renderer.RenderPipelines;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
-import net.minecraft.util.CommonColors;
-import org.jspecify.annotations.NonNull;
+import org.jetbrains.annotations.NotNull;
 
 import static de.pr77pr77.clickguard.ClickGuard.id;
+import static de.pr77pr77.clickguard.client.ClickGuardClient.TEXT_GRAY;
 import static de.pr77pr77.clickguard.client.ClickGuardClient.formatDuration;
 
 public class AutoDisconnectScreen extends Screen {
@@ -87,7 +87,7 @@ public class AutoDisconnectScreen extends Screen {
     }
 
     @Override
-    public void render(final @NonNull GuiGraphics graphics, final int mouseX, final int mouseY, final float a) {
+    public void render(final @NotNull GuiGraphics graphics, final int mouseX, final int mouseY, final float a) {
         super.render(graphics, mouseX, mouseY, a);
 
         boolean isHovered = isMouseOverTitle(mouseX, mouseY);
@@ -99,7 +99,7 @@ public class AutoDisconnectScreen extends Screen {
         int titleY = titleBaseY - (int) titleOffsetY;
 
         if (titleOffsetY > TARGET_OFFSET * 0.20f) {
-            graphics.drawCenteredString(font, Component.translatable("clickguard.autoDisconnectScreen.hiddenText." + (hoverTriggerCount + 1)), width / 2, titleBaseY + TITLE_HEIGHT - 20, CommonColors.TEXT_GRAY);
+            graphics.drawCenteredString(font, Component.translatable("clickguard.autoDisconnectScreen.hiddenText." + (hoverTriggerCount + 1)), width / 2, titleBaseY + TITLE_HEIGHT - 20, TEXT_GRAY);
         }
 
         graphics.blit(RenderPipelines.GUI_TEXTURED, id("textures/gui/title/clickguard.png"), titleX, titleY, 0, 0, TITLE_WIDTH, TITLE_HEIGHT, TITLE_WIDTH, TITLE_HEIGHT);

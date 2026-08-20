@@ -10,9 +10,8 @@ import net.minecraft.client.gui.narration.NarratableEntry;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.network.chat.CommonComponents;
 import net.minecraft.network.chat.Component;
-import net.minecraft.resources.Identifier;
-import net.minecraft.util.CommonColors;
-import org.jspecify.annotations.NonNull;
+import net.minecraft.resources.ResourceLocation;
+import org.jetbrains.annotations.NotNull;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -26,6 +25,7 @@ import java.math.RoundingMode;
 import static de.pr77pr77.clickguard.ClickGuard.LOGGER;
 import static de.pr77pr77.clickguard.ClickGuard.id;
 import static de.pr77pr77.clickguard.client.ClickGuardClient.NarratableEntryOfComponent;
+import static de.pr77pr77.clickguard.client.ClickGuardClient.TEXT_GRAY;
 
 public class EditPresetScreen extends Screen {
     private final Screen parent;
@@ -72,7 +72,10 @@ public class EditPresetScreen extends Screen {
                     }
                 });
         list.addButon(Component.translatable("clickguard.keybind.label", Component.translatable(preset.keybind.getName())),
-                (button, buttonEntry) -> minecraft.setScreen(new ChooseKeybindScreen(this, preset)));
+                (button, buttonEntry) -> {
+                    assert minecraft != null;
+                    minecraft.setScreen(new ChooseKeybindScreen(this, preset));
+                });
         list.addClickingTypeEntry(preset);
         list.addFilterEntry(preset);
 
@@ -172,6 +175,7 @@ public class EditPresetScreen extends Screen {
         preset.waitTimeActions.removeIf(ConfigManager.ConfigData.TimeAction::isObsolete);
 
         ClickGuardClient.configManager.save();
+        assert minecraft != null;
         minecraft.setScreen(parent);
     }
 
@@ -404,7 +408,7 @@ public class EditPresetScreen extends Screen {
             }
 
             @Override
-            public void renderContent(@NonNull GuiGraphics graphics, int mouseX, int mouseY, boolean hovered, float a) {
+            public void renderContent(@NotNull GuiGraphics graphics, int mouseX, int mouseY, boolean hovered, float a) {
                 if (innerButton) {
                     graphics.fill(getContentX(), getY(), getContentRight(), lastBoxEntry ? getContentBottom() : getY() + getHeight(), 0x44000000);
                 }
@@ -413,12 +417,12 @@ public class EditPresetScreen extends Screen {
             }
 
             @Override
-            public @NonNull List<? extends GuiEventListener> children() {
+            public @NotNull List<? extends GuiEventListener> children() {
                 return List.of(button);
             }
 
             @Override
-            public @NonNull List<? extends NarratableEntry> narratables() {
+            public @NotNull List<? extends NarratableEntry> narratables() {
                 return List.of(button);
             }
         }
@@ -450,7 +454,7 @@ public class EditPresetScreen extends Screen {
             }
 
             @Override
-            public void renderContent(@NonNull GuiGraphics graphics, int mouseX, int mouseY, boolean hovered, float a) {
+            public void renderContent(@NotNull GuiGraphics graphics, int mouseX, int mouseY, boolean hovered, float a) {
                 graphics.fill(getContentX(), getContentY(), getContentRight(), getContentBottom(), 0x44000000);
                 graphics.drawString(
                         minecraft.font,
@@ -465,12 +469,12 @@ public class EditPresetScreen extends Screen {
             }
 
             @Override
-            public @NonNull List<? extends GuiEventListener> children() {
+            public @NotNull List<? extends GuiEventListener> children() {
                 return List.of(editBox);
             }
 
             @Override
-            public @NonNull List<? extends NarratableEntry> narratables() {
+            public @NotNull List<? extends NarratableEntry> narratables() {
                 return List.of(editBox);
             }
         }
@@ -502,7 +506,7 @@ public class EditPresetScreen extends Screen {
 
                 cpsEditBox.setResponder(value -> {
                     if (suppressCpsUpdate) {
-                        cpsEditBox.setTextColor(CommonColors.TEXT_GRAY);
+                        cpsEditBox.setTextColor(TEXT_GRAY);
                         return;
                     }
                     if (value.isEmpty()) {
@@ -525,7 +529,7 @@ public class EditPresetScreen extends Screen {
                             cpsEditBox.setTextColor(0xFFFC5454);
                             ms = Integer.MAX_VALUE;
                         } else {
-                            cpsEditBox.setTextColor(CommonColors.TEXT_GRAY);
+                            cpsEditBox.setTextColor(TEXT_GRAY);
                         }
 
                         // Update preset and interval display, but do NOT overwrite user's CPS input to avoid surprising edits while typing
@@ -552,7 +556,7 @@ public class EditPresetScreen extends Screen {
                 });
                 intervalEditBox.setResponder(value -> {
                     if (suppressIntervalUpdate) {
-                        intervalEditBox.setTextColor(CommonColors.TEXT_GRAY);
+                        intervalEditBox.setTextColor(TEXT_GRAY);
                         return;
                     }
                     if (value.isEmpty()) {
@@ -569,9 +573,9 @@ public class EditPresetScreen extends Screen {
                             suppressCpsUpdate = false;
                         }
                         checkDurationTooLong(preset.holdingDurationMS);
-                        intervalEditBox.setTextColor(CommonColors.TEXT_GRAY);
+                        intervalEditBox.setTextColor(TEXT_GRAY);
                     } else if (ms.isPresent() && ms.get() > 0) {
-                        intervalEditBox.setTextColor(CommonColors.TEXT_GRAY);
+                        intervalEditBox.setTextColor(TEXT_GRAY);
                     } else {
                         intervalEditBox.setTextColor(0xFFFC5454);
                     }
@@ -608,8 +612,8 @@ public class EditPresetScreen extends Screen {
             }
 
             void createTypeButton() {
-                typeButton = CycleButton.builder(ConfigManager.ConfigData.ClickingType::getComponent,
-                                this.preset.clickingType)
+                typeButton = CycleButton.builder(ConfigManager.ConfigData.ClickingType::getComponent)
+                        .withInitialValue(this.preset.clickingType)
                         .withValues(preset.keybind.getName().equals("key.attack") ? Arrays.asList(ConfigManager.ConfigData.ClickingType.values()) :
                                 List.of(ConfigManager.ConfigData.ClickingType.CUSTOM_TIMING, ConfigManager.ConfigData.ClickingType.CONTINUOUS))
                         .create(0, 0, 0, 20, Component.translatable("clickguard.type.description"),
@@ -682,7 +686,7 @@ public class EditPresetScreen extends Screen {
             }
 
             @Override
-            public void renderContent(@NonNull GuiGraphics graphics, int mouseX, int mouseY, boolean hovered, float a) {
+            public void renderContent(@NotNull GuiGraphics graphics, int mouseX, int mouseY, boolean hovered, float a) {
                 graphics.fill(getContentX(), getContentY(), getContentRight(), getContentBottom(), 0x44000000);
 
                 typeButton.setY(getContentY() + 2);
@@ -723,12 +727,12 @@ public class EditPresetScreen extends Screen {
             }
 
             @Override
-            public @NonNull List<? extends GuiEventListener> children() {
+            public @NotNull List<? extends GuiEventListener> children() {
                 return List.of(typeButton, cpsEditBox, intervalEditBox, durationEditBox);
             }
 
             @Override
-            public @NonNull List<? extends NarratableEntry> narratables() {
+            public @NotNull List<? extends NarratableEntry> narratables() {
                 return List.of(typeButton, cpsEditBox, intervalEditBox, durationEditBox);
             }
         }
@@ -755,7 +759,7 @@ public class EditPresetScreen extends Screen {
             }
 
             @Override
-            public void renderContent(@NonNull GuiGraphics graphics, int mouseX, int mouseY, boolean hovered, float a) {
+            public void renderContent(@NotNull GuiGraphics graphics, int mouseX, int mouseY, boolean hovered, float a) {
                 graphics.fill(getContentX(), getContentY(), getContentRight(), getContentBottom(), 0x44000000);
                 graphics.drawString(
                         minecraft.font,
@@ -768,20 +772,20 @@ public class EditPresetScreen extends Screen {
 
                 checkboxEntities.setY(getContentY() + 2 + minecraft.font.lineHeight + 2);
                 checkboxEntities.setWidth(getContentWidth() - 4);
-                checkboxEntities.renderContents(graphics, mouseX, mouseY, a);
+                checkboxEntities.render(graphics, mouseX, mouseY, a);
 
                 checkboxBlocks.setY(checkboxEntities.getBottom() + 2);
                 checkboxBlocks.setWidth(getContentWidth() - 4);
-                checkboxBlocks.renderContents(graphics, mouseX, mouseY, a);
+                checkboxBlocks.render(graphics, mouseX, mouseY, a);
             }
 
             @Override
-            public @NonNull List<? extends GuiEventListener> children() {
+            public @NotNull List<? extends GuiEventListener> children() {
                 return List.of(checkboxEntities, checkboxBlocks);
             }
 
             @Override
-            public @NonNull List<? extends NarratableEntry> narratables() {
+            public @NotNull List<? extends NarratableEntry> narratables() {
                 return List.of(NarratableEntryOfComponent(Component.translatable("clickguard.filter.title")), checkboxEntities, checkboxBlocks);
             }
         }
@@ -800,7 +804,7 @@ public class EditPresetScreen extends Screen {
             }
 
             @Override
-            public void renderContent(@NonNull GuiGraphics graphics, int mouseX, int mouseY, boolean hovered, float a) {
+            public void renderContent(@NotNull GuiGraphics graphics, int mouseX, int mouseY, boolean hovered, float a) {
                 graphics.fill(getContentX(), getContentY(), getContentRight(), getY() + getHeight(), 0x44000000);
                 graphics.drawString(
                         minecraft.font,
@@ -813,12 +817,12 @@ public class EditPresetScreen extends Screen {
             }
 
             @Override
-            public @NonNull List<? extends GuiEventListener> children() {
+            public @NotNull List<? extends GuiEventListener> children() {
                 return List.of();
             }
 
             @Override
-            public @NonNull List<? extends NarratableEntry> narratables() {
+            public @NotNull List<? extends NarratableEntry> narratables() {
                 return List.of(NarratableEntryOfComponent(label));
             }
         }
@@ -856,7 +860,7 @@ public class EditPresetScreen extends Screen {
                 checkboxLeave.setWidth(checkboxesWidth);
             }
 
-            public void extractBase(@NonNull GuiGraphics graphics, int mouseX, int mouseY, float a, int checkboxesY) {
+            public void extractBase(@NotNull GuiGraphics graphics, int mouseX, int mouseY, float a, int checkboxesY) {
                 // General box, together with other
                 graphics.fill(getContentX(), getY(), getContentRight(), lastActionEntry ? getContentBottom() : getY() + getHeight(), 0x44000000);
                 // Own box:
@@ -871,13 +875,13 @@ public class EditPresetScreen extends Screen {
                 );
 
                 checkboxStopClicker.setY(checkboxesY);
-                checkboxStopClicker.renderContents(graphics, mouseX, mouseY, a);
+                checkboxStopClicker.render(graphics, mouseX, mouseY, a);
 
                 checkboxNotification.setY(checkboxesY);
-                checkboxNotification.renderContents(graphics, mouseX, mouseY, a);
+                checkboxNotification.render(graphics, mouseX, mouseY, a);
 
                 checkboxLeave.setY(checkboxesY);
-                checkboxLeave.renderContents(graphics, mouseX, mouseY, a);
+                checkboxLeave.render(graphics, mouseX, mouseY, a);
             }
         }
 
@@ -892,17 +896,17 @@ public class EditPresetScreen extends Screen {
             }
 
             @Override
-            public void renderContent(@NonNull GuiGraphics graphics, int mouseX, int mouseY, boolean hovered, float a) {
+            public void renderContent(@NotNull GuiGraphics graphics, int mouseX, int mouseY, boolean hovered, float a) {
                 extractBase(graphics, mouseX, mouseY, a, getContentY() + 2 + minecraft.font.lineHeight + 2);
             }
 
             @Override
-            public @NonNull List<? extends GuiEventListener> children() {
+            public @NotNull List<? extends GuiEventListener> children() {
                 return List.of(checkboxStopClicker, checkboxNotification, checkboxLeave);
             }
 
             @Override
-            public @NonNull List<? extends NarratableEntry> narratables() {
+            public @NotNull List<? extends NarratableEntry> narratables() {
                 return List.of(NarratableEntryOfComponent(label), checkboxStopClicker, checkboxNotification, checkboxLeave);
             }
         }
@@ -914,13 +918,13 @@ public class EditPresetScreen extends Screen {
             IconSlider slider;
 
             public enum Type {
-                HEALTH(new IconSlider.IconSprites(Identifier.withDefaultNamespace("hud/heart/full"),
-                        Identifier.withDefaultNamespace("hud/heart/container"),
-                        Identifier.withDefaultNamespace("hud/heart/half")),
+                HEALTH(new IconSlider.IconSprites(ResourceLocation.withDefaultNamespace("hud/heart/full"),
+                        ResourceLocation.withDefaultNamespace("hud/heart/container"),
+                        ResourceLocation.withDefaultNamespace("hud/heart/half")),
                         "clickguard.action.health.slider",
                         Component.translatable("clickguard.action.health")),
-                HUNGER(new IconSlider.IconSprites(Identifier.withDefaultNamespace("hud/food_full"),
-                        Identifier.withDefaultNamespace("hud/food_empty"),
+                HUNGER(new IconSlider.IconSprites(ResourceLocation.withDefaultNamespace("hud/food_full"),
+                        ResourceLocation.withDefaultNamespace("hud/food_empty"),
                         id("hud/food_right_eaten")),
                         "clickguard.action.hunger.slider",
                         Component.translatable("clickguard.action.hunger"));
@@ -953,20 +957,20 @@ public class EditPresetScreen extends Screen {
             }
 
             @Override
-            public void renderContent(@NonNull GuiGraphics graphics, int mouseX, int mouseY, boolean hovered, float a) {
+            public void renderContent(@NotNull GuiGraphics graphics, int mouseX, int mouseY, boolean hovered, float a) {
                 extractBase(graphics, mouseX, mouseY, a, getContentY() + 2 + minecraft.font.lineHeight + 2 + slider.getHeight() + 2);
 
                 slider.setY(getContentY() + 2 + minecraft.font.lineHeight + 2);
-                slider.renderWidget(graphics, mouseX, mouseY, a);
+                slider.render(graphics, mouseX, mouseY, a);
             }
 
             @Override
-            public @NonNull List<? extends GuiEventListener> children() {
+            public @NotNull List<? extends GuiEventListener> children() {
                 return List.of(slider, checkboxStopClicker, checkboxNotification, checkboxLeave);
             }
 
             @Override
-            public @NonNull List<? extends NarratableEntry> narratables() {
+            public @NotNull List<? extends NarratableEntry> narratables() {
                 return List.of(NarratableEntryOfComponent(type.label), slider, checkboxStopClicker, checkboxNotification, checkboxLeave);
             }
         }
@@ -993,20 +997,20 @@ public class EditPresetScreen extends Screen {
             }
 
             @Override
-            public void renderContent(@NonNull GuiGraphics graphics, int mouseX, int mouseY, boolean hovered, float a) {
+            public void renderContent(@NotNull GuiGraphics graphics, int mouseX, int mouseY, boolean hovered, float a) {
                 extractBase(graphics, mouseX, mouseY, a, getContentY() + 2 + minecraft.font.lineHeight + 2 + slider.getHeight() + 2);
 
                 slider.setY(getContentY() + 2 + minecraft.font.lineHeight + 2);
-                slider.renderWidget(graphics, mouseX, mouseY, a);
+                slider.render(graphics, mouseX, mouseY, a);
             }
 
             @Override
-            public @NonNull List<? extends GuiEventListener> children() {
+            public @NotNull List<? extends GuiEventListener> children() {
                 return List.of(slider, checkboxStopClicker, checkboxNotification, checkboxLeave);
             }
 
             @Override
-            public @NonNull List<? extends NarratableEntry> narratables() {
+            public @NotNull List<? extends NarratableEntry> narratables() {
                 return List.of(NarratableEntryOfComponent(label), slider, checkboxStopClicker, checkboxNotification, checkboxLeave);
             }
         }
@@ -1029,9 +1033,9 @@ public class EditPresetScreen extends Screen {
                     if (ms.isPresent() && !ms.get().equals(action.timeMS) && ms.get() > 1) {
                         action.timeMS = ms.get();
 
-                        waitTimeEditBox.setTextColor(CommonColors.TEXT_GRAY);
+                        waitTimeEditBox.setTextColor(TEXT_GRAY);
                     } else if (ms.isPresent() && ms.get() > 1) {
-                        waitTimeEditBox.setTextColor(CommonColors.TEXT_GRAY);
+                        waitTimeEditBox.setTextColor(TEXT_GRAY);
                     } else {
                         waitTimeEditBox.setTextColor(0xFFFC5454);
                         action.timeMS = null;
@@ -1057,20 +1061,20 @@ public class EditPresetScreen extends Screen {
             }
 
             @Override
-            public void renderContent(@NonNull GuiGraphics graphics, int mouseX, int mouseY, boolean hovered, float a) {
+            public void renderContent(@NotNull GuiGraphics graphics, int mouseX, int mouseY, boolean hovered, float a) {
                 extractBase(graphics, mouseX, mouseY, a, getContentY() + 2 + minecraft.font.lineHeight + 2 + waitTimeEditBox.getHeight() + 2);
 
                 waitTimeEditBox.setY(getContentY() + 2 + minecraft.font.lineHeight + 2);
-                waitTimeEditBox.renderWidget(graphics, mouseX, mouseY, a);
+                waitTimeEditBox.render(graphics, mouseX, mouseY, a);
             }
 
             @Override
-            public @NonNull List<? extends GuiEventListener> children() {
+            public @NotNull List<? extends GuiEventListener> children() {
                 return List.of(waitTimeEditBox, checkboxStopClicker, checkboxNotification, checkboxLeave);
             }
 
             @Override
-            public @NonNull List<? extends NarratableEntry> narratables() {
+            public @NotNull List<? extends NarratableEntry> narratables() {
                 return List.of(NarratableEntryOfComponent(label), waitTimeEditBox, checkboxStopClicker, checkboxNotification, checkboxLeave);
             }
         }

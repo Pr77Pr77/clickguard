@@ -12,7 +12,7 @@ import net.minecraft.client.gui.narration.NarratableEntry;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.network.chat.CommonComponents;
 import net.minecraft.network.chat.Component;
-import org.jspecify.annotations.NonNull;
+import org.jetbrains.annotations.NotNull;
 
 import java.util.List;
 
@@ -65,6 +65,7 @@ public class ChooseKeybindScreen extends Screen {
 
     @Override
     public void onClose() {
+        assert minecraft != null;
         minecraft.setScreen(parent);
     }
 
@@ -124,7 +125,7 @@ public class ChooseKeybindScreen extends Screen {
             }
 
             @Override
-            public void renderContent(@NonNull GuiGraphics graphics, int mouseX, int mouseY, boolean hovered, float a) {
+            public void renderContent(@NotNull GuiGraphics graphics, int mouseX, int mouseY, boolean hovered, float a) {
                 int textX = getContentX() + 8;
                 int textY = getContentY() + (getContentHeight() - minecraft.font.lineHeight * 2 - 2) / 2;
 
@@ -137,12 +138,12 @@ public class ChooseKeybindScreen extends Screen {
             }
 
             @Override
-            public @NonNull List<? extends GuiEventListener> children() {
+            public @NotNull List<? extends GuiEventListener> children() {
                 return List.of(selectButton);
             }
 
             @Override
-            public @NonNull List<? extends NarratableEntry> narratables() {
+            public @NotNull List<? extends NarratableEntry> narratables() {
                 return List.of(selectButton);
             }
         }

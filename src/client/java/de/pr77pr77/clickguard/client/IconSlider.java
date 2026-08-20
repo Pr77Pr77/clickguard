@@ -8,8 +8,8 @@ import net.minecraft.client.input.MouseButtonEvent;
 import net.minecraft.client.renderer.RenderPipelines;
 import net.minecraft.network.chat.Component;
 import net.minecraft.util.ARGB;
-import net.minecraft.resources.Identifier;
-import org.jspecify.annotations.NonNull;
+import net.minecraft.resources.ResourceLocation;
+import org.jetbrains.annotations.NotNull;
 
 import java.util.function.Consumer;
 
@@ -22,8 +22,8 @@ public class IconSlider extends AbstractSliderButton {
     static final int HANDLE_HALF_WIDTH = 4; // Border width left and right
     static final int HEIGHT = 25;
 
-    static final Identifier HANDLE_SPRITE = id("widget/arrow_slider_handle");
-    static final Identifier HANDLE_HIGHLIGHTED_SPRITE = id("widget/arrow_slider_handle_highlighted");
+    static final ResourceLocation HANDLE_SPRITE = id("widget/arrow_slider_handle");
+    static final ResourceLocation HANDLE_HIGHLIGHTED_SPRITE = id("widget/arrow_slider_handle_highlighted");
 
     private final IconSprites sprites;
     public final int maxShownPoints;
@@ -82,7 +82,6 @@ public class IconSlider extends AbstractSliderButton {
             }
         }
         extractHandle(graphics);
-        this.handleCursor(graphics);
     }
 
     private void extractHandle(final GuiGraphics graphics) {
@@ -111,7 +110,7 @@ public class IconSlider extends AbstractSliderButton {
     }
 
     @Override
-    public void onRelease(final @NonNull MouseButtonEvent event) {
+    public void onRelease(final @NotNull MouseButtonEvent event) {
         // Set value to exact value to let the handle snap into place:
         value = selectedPoints / (double) maxShownPoints;
         super.onRelease(event);
@@ -137,12 +136,12 @@ public class IconSlider extends AbstractSliderButton {
     }
 
     public static class IconSprites {
-        private final Identifier full;
-        private final Identifier empty;
+        private final ResourceLocation full;
+        private final ResourceLocation empty;
 
-        private final Identifier half;
+        private final ResourceLocation half;
 
-        public IconSprites(Identifier full, Identifier empty, Identifier half) {
+        public IconSprites(ResourceLocation full, ResourceLocation empty, ResourceLocation half) {
             this.full = full;
             this.empty = empty;
             this.half = half;

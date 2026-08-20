@@ -11,7 +11,7 @@ import net.minecraft.client.gui.screens.ConfirmScreen;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.network.chat.CommonComponents;
 import net.minecraft.network.chat.Component;
-import org.jspecify.annotations.NonNull;
+import org.jetbrains.annotations.NotNull;
 
 import java.util.List;
 
@@ -46,6 +46,7 @@ public class PresetsScreen extends Screen {
                 button -> onClose()).build());
         startStopButton = Button.builder(getStartStopButtonComponent(),
                 button -> toggleAutoClickingEnabled()).build();
+        assert minecraft != null;
         startStopButton.active = minecraft.level != null;
         footerButtons.addChild(startStopButton);
         layout.addToFooter(footerButtons);
@@ -75,6 +76,7 @@ public class PresetsScreen extends Screen {
     @Override
     public void onClose() {
         if (parent != null) {
+            assert minecraft != null;
             minecraft.setScreen(parent);
         } else {
             super.onClose();
@@ -145,18 +147,18 @@ public class PresetsScreen extends Screen {
             }
 
             @Override
-            public void renderContent(@NonNull GuiGraphics graphics, int mouseX, int mouseY, boolean hovered, float a) {
+            public void renderContent(@NotNull GuiGraphics graphics, int mouseX, int mouseY, boolean hovered, float a) {
                 button.setY(getContentY());
                 button.render(graphics, mouseX, mouseY, a);
             }
 
             @Override
-            public @NonNull List<? extends GuiEventListener> children() {
+            public @NotNull List<? extends GuiEventListener> children() {
                 return List.of(button);
             }
 
             @Override
-            public @NonNull List<? extends NarratableEntry> narratables() {
+            public @NotNull List<? extends NarratableEntry> narratables() {
                 return List.of(button);
             }
         }
@@ -169,19 +171,19 @@ public class PresetsScreen extends Screen {
             private final Button deleteButton;
 
             public PresetEnty(Minecraft minecraft, ConfigManager.ConfigData.Preset preset) {
-                name = FocusableTextWidget.builder(Component.literal(preset.name), minecraft.font)
-                        .backgroundFill(FocusableTextWidget.BackgroundFill.ON_FOCUS).alwaysShowBorder(false).build();
+                name = new FocusableTextWidget(0, Component.literal(preset.name), minecraft.font,
+                        false, FocusableTextWidget.BackgroundFill.ON_FOCUS, 4);
                 name.setMaxRows(1);
                 name.setCentered(false);
-                keybindAndBriefOptions = FocusableTextWidget.builder(Component.translatable(preset.keybind.getName()), minecraft.font)
-                        .backgroundFill(FocusableTextWidget.BackgroundFill.ON_FOCUS).alwaysShowBorder(false).build();
+                keybindAndBriefOptions = new FocusableTextWidget(0, Component.translatable(preset.keybind.getName()), minecraft.font,
+                        false, FocusableTextWidget.BackgroundFill.ON_FOCUS, 4);
                 keybindAndBriefOptions.setMaxRows(1);
                 keybindAndBriefOptions.setCentered(false);
 
                 Screen parentScreen = minecraft.screen;
 
-                enableButton = CycleButton.builder(PresetEnty::getColoredOnOffComponent,
-                                preset.enabled)
+                enableButton = CycleButton.builder(PresetEnty::getColoredOnOffComponent)
+                        .withInitialValue(preset.enabled)
                         .withValues(List.of(Boolean.TRUE, Boolean.FALSE))
                         .displayOnlyValue()
                         .create(0, 0, 0, 20, Component.translatable("manageServer.resourcePack.enabled"), (button, value) -> {
@@ -224,22 +226,22 @@ public class PresetsScreen extends Screen {
                 editButton.setRectangle(70, 20, deleteButton.getX() - 4 - 70, getContentYMiddle() - 10);
                 enableButton.setRectangle(30, 20, editButton.getX() - 4 - 30, getContentYMiddle() - 10);
 
-                name.setPosition(getContentX() + 4, getContentY() + 4);
-                name.setMaxWidth(enableButton.getX() - getContentX() - 8);
-                keybindAndBriefOptions.setPosition(getContentX() + 4, name.getBottom());
-                keybindAndBriefOptions.setMaxWidth(enableButton.getX() - getContentX() - 8);
+                name.setPosition(getContentX() + 4 + 4, getContentY() + 4 + 4);
+                name.setMaxWidth(enableButton.getX() - getContentX() - 8 - 8);
+                keybindAndBriefOptions.setPosition(getContentX() + 4 + 4, name.getBottom() + 8);
+                keybindAndBriefOptions.setMaxWidth(enableButton.getX() - getContentX() - 8 - 8);
             }
 
             @Override
-            public void renderContent(@NonNull GuiGraphics graphics, int mouseX, int mouseY, boolean hovered, float a) {
+            public void renderContent(@NotNull GuiGraphics graphics, int mouseX, int mouseY, boolean hovered, float a) {
                 graphics.fill(getContentX(), getContentY(), getContentX() + getContentWidth(), getContentY() + getContentHeight(), 0x44000000);
 
                 deleteButton.setY(getContentYMiddle() - 10);
                 editButton.setY(getContentYMiddle() - 10);
                 enableButton.setY(getContentYMiddle() - 10);
 
-                name.setY(getContentY() + 4);
-                keybindAndBriefOptions.setY(name.getBottom());
+                name.setY(getContentY() + 4 + 4);
+                keybindAndBriefOptions.setY(name.getBottom() + 8);
 
                 deleteButton.render(graphics, mouseX, mouseY, a);
                 editButton.render(graphics, mouseX, mouseY, a);
@@ -250,12 +252,12 @@ public class PresetsScreen extends Screen {
             }
 
             @Override
-            public @NonNull List<? extends GuiEventListener> children() {
+            public @NotNull List<? extends GuiEventListener> children() {
                 return List.of(name, keybindAndBriefOptions, enableButton, editButton, deleteButton);
             }
 
             @Override
-            public @NonNull List<? extends NarratableEntry> narratables() {
+            public @NotNull List<? extends NarratableEntry> narratables() {
                 return List.of(name, keybindAndBriefOptions, enableButton, editButton, deleteButton);
             }
         }

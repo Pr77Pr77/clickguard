@@ -45,6 +45,6 @@ jobs:
             fabric-api(required)
             modmenu(optional)
           game-versions: |
-            1.21.11
+            1.21.10
           java: |
             >=21

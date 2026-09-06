@@ -9,7 +9,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os: [ubuntu-latest, windows-latest, macos-latest]
+        os: [ ubuntu-latest, windows-latest, macos-latest ]
 
     runs-on: ${{ matrix.os }}
 
@@ -25,6 +25,10 @@ jobs:
 
       - name: Setup Gradle
         uses: gradle/actions/setup-gradle@v3
+
+      - name: Install libnotify (for Linux JNA tests)
+        if: runner.os == 'Linux'
+        run: sudo apt-get update && sudo apt-get install -y libnotify4 libnotify-dev
 
       - name: Run Tests
         run: ./gradlew test --info

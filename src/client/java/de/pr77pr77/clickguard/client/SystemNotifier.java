@@ -197,8 +197,15 @@ public class SystemNotifier {
     }
 
     private static String getMinecraftWindowTitle() {
-        long windowHandle = Minecraft.getInstance().getWindow().handle();
-        String title = GLFW.glfwGetWindowTitle(windowHandle);
-        return title != null ? title : "Minecraft"; // Fallback
+        try {
+            long windowHandle = Minecraft.getInstance().getWindow().handle();
+            String title = GLFW.glfwGetWindowTitle(windowHandle);
+            if (title != null && !title.isEmpty()) {
+                return title;
+            }
+        } catch (Throwable throwable) {
+            LOGGER.warn("Could not get window title: ", throwable);
+        }
+        return "Minecraft"; // Fallback
     }
 }

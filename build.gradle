@@ -39,6 +39,16 @@ dependencies {
 
     // Mod Menu, but only for compiling.
     compileOnly "com.terraformersmc:modmenu:${project.modmenu_version}"
+
+    // For unit tests:
+    testImplementation 'org.junit.jupiter:junit-jupiter-api:5.10.2'
+    testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine:5.10.2'
+    testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
+}
+
+test {
+    useJUnitPlatform()
+    jvmArgs '--enable-native-access=ALL-UNNAMED'
 }
 
 processResources {

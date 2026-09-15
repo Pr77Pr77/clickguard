@@ -18,7 +18,6 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.resources.Identifier;
 import org.jspecify.annotations.NonNull;
-import org.lwjgl.glfw.GLFW;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -42,8 +41,8 @@ public class ClickGuardClient implements ClientModInitializer {
         KeyMapping.Category clickGuardKeybindCategory = new KeyMapping.Category(Identifier.fromNamespaceAndPath("clickguard", "clickguard"));
         openPresetsScreen = KeyMappingHelper.registerKeyMapping(new KeyMapping(
                 "key.clickguard.openPresetsScreen",
-                InputConstants.Type.KEYSYM,
-                GLFW.GLFW_KEY_COMMA,
+                InputConstants.Type.KEYBOARD,
+                InputConstants.KEY_COMMA,
                 clickGuardKeybindCategory
         ));
         ClientTickEvents.END_CLIENT_TICK.register(client -> {
@@ -58,8 +57,8 @@ public class ClickGuardClient implements ClientModInitializer {
 
         enableClickingKey = KeyMappingHelper.registerKeyMapping(new KeyMapping(
                 "key.clickguard.toggleClicking",
-                InputConstants.Type.KEYSYM,
-                GLFW.GLFW_KEY_PERIOD,
+                InputConstants.Type.KEYBOARD,
+                InputConstants.KEY_PERIOD,
                 clickGuardKeybindCategory
         ));
         ClientTickEvents.END_CLIENT_TICK.register(client -> {

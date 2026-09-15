@@ -6,7 +6,7 @@ import com.sun.jna.Pointer;
 import com.sun.jna.Structure;
 import com.sun.jna.win32.StdCallLibrary;
 import net.minecraft.client.Minecraft;
-import org.lwjgl.glfw.GLFW;
+import org.lwjgl.sdl.SDLVideo;
 
 import static de.pr77pr77.clickguard.ClickGuard.LOGGER;
 
@@ -199,7 +199,7 @@ public class SystemNotifier {
     private static String getMinecraftWindowTitle() {
         try {
             long windowHandle = Minecraft.getInstance().getWindow().handle();
-            String title = GLFW.glfwGetWindowTitle(windowHandle);
+            String title = SDLVideo.SDL_GetWindowTitle(windowHandle);
             if (title != null && !title.isEmpty()) {
                 return title;
             }

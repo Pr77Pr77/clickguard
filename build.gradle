@@ -51,16 +51,20 @@ test {
     jvmArgs '--enable-native-access=ALL-UNNAMED'
 }
 
+def fabricMinecraftVersion = project.minecraft_version
+        .replace("-rc-", "-rc.")
+        .replace("-pre-", "-pre.")
+
 processResources {
     inputs.property "version", project.version
-    inputs.property "minecraft_version", project.minecraft_version
+    inputs.property "minecraft_version", fabricMinecraftVersion
     inputs.property "next_major_minecraft_version", project.next_major_minecraft_version
     inputs.property "loader_version", project.loader_version
 
     filesMatching("fabric.mod.json") {
         expand(
                 "version": project.version,
-                "minecraft_version": project.minecraft_version,
+                "minecraft_version": fabricMinecraftVersion,
                 "next_major_minecraft_version": project.next_major_minecraft_version,
                 "loader_version": project.loader_version
         )

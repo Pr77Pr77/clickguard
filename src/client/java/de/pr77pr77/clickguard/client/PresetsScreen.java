@@ -43,11 +43,13 @@ public class PresetsScreen extends Screen {
 
         LinearLayout footerButtons = LinearLayout.horizontal().spacing(8);
         footerButtons.addChild(Button.builder(CommonComponents.GUI_DONE,
-                _ -> onClose()).build());
+                _ -> onClose()).size(92, 20).build());
         startStopButton = Button.builder(getStartStopButtonComponent(),
-                _ -> toggleAutoClickingEnabled()).build();
+                _ -> toggleAutoClickingEnabled()).size(92, 20).build();
         startStopButton.active = minecraft.level != null;
         footerButtons.addChild(startStopButton);
+        footerButtons.addChild(Button.builder(Component.translatable("clickguard.generalSettings"),
+                _ -> minecraft.gui.setScreen(new GeneralSettingsScreen(this))).size(92, 20).build());
         layout.addToFooter(footerButtons);
 
         layout.visitWidgets(this::addRenderableWidget);

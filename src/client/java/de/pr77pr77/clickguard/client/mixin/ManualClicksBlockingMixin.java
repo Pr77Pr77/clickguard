@@ -11,8 +11,7 @@ import org.spongepowered.asm.mixin.injection.Redirect;
 
 import java.util.function.Consumer;
 
-import static de.pr77pr77.clickguard.client.ClickGuardClient.autoClickingEnabled;
-import static de.pr77pr77.clickguard.client.ClickGuardClient.clickers;
+import static de.pr77pr77.clickguard.client.ClickGuardClient.*;
 
 @Mixin(KeyMapping.class)
 public class ManualClicksBlockingMixin {
@@ -25,7 +24,7 @@ public class ManualClicksBlockingMixin {
     )
     private static void clickguard$onOperationAccept(Consumer<KeyMapping> operation, Object keyMappingObj) {
         if (keyMappingObj instanceof KeyMapping keyMapping) {
-            if (!autoClickingEnabled ||
+            if (!autoClickingEnabled || configManager.data.allowClickingWhenEnabled ||
                     clickers.stream().noneMatch(clicker -> clicker.preset.keybind == keyMappingObj)) {
                 operation.accept(keyMapping);
             } else {

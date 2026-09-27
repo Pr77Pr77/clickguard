@@ -108,7 +108,9 @@ public class ClickGuardClient implements ClientModInitializer {
         });
 
         ClientPlayConnectionEvents.DISCONNECT.register((listener, minecraft) -> {
-            // Reset the auto clickers after disconnect.
+            if (configManager.data.keepEnabledAfterDisconnect) {
+                return; // Only reset the auto clickers after disconnect.
+            }
             autoClickingEnabled = false;
             for (Clicker clicker : clickers) {
                 clicker.releaseClickIfClicking();

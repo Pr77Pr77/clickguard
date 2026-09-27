@@ -85,6 +85,8 @@
   "clickguard.autoDisconnectScreen.hiddenText.8": "Fine, you'll see the truth next time.",
   "clickguard.autoDisconnectScreen.hiddenText.9": "",
   "clickguard.autoDisconnectScreen.hiddenText.10": "I told you so!",
+  "clickguard.generalSettings": "General Settings",
+  "clickguard.generalSettings.allowClickingWhenEnabled": "Allow clicking even when auto clicker is enabled",
   "clickguard.milliseconds": "%s milliseconds",
   "clickguard.seconds": "%s seconds",
   "clickguard.minutes": "%s minutes",

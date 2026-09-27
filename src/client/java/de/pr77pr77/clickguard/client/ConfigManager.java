@@ -36,6 +36,8 @@ public class ConfigManager {
     public static class ConfigData {
         List<Preset> presets = new ArrayList<>();
 
+        public boolean allowClickingWhenEnabled = true;
+
         public static class Preset {
             public String name = "";
             public KeyMapping keybind;

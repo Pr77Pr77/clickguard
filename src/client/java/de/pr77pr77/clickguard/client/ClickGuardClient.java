@@ -79,7 +79,7 @@ public class ClickGuardClient implements ClientModInitializer {
                         clicker.handleAutomaticClicks();
                     }
 
-                    if(!(Minecraft.getInstance().gui.screen() instanceof EditPresetScreen) && !(Minecraft.getInstance().gui.screen() instanceof PresetsScreen)) {
+                    if (!(Minecraft.getInstance().gui.screen() instanceof EditPresetScreen) && !(Minecraft.getInstance().gui.screen() instanceof PresetsScreen)) {
                         AutoStoppedInfo info = clicker.checkActions();
                         if (info != null && autoStoppedInfo == null) {
                             autoStoppedInfo = info;
@@ -106,7 +106,9 @@ public class ClickGuardClient implements ClientModInitializer {
         });
 
         ClientPlayConnectionEvents.DISCONNECT.register((_, _) -> {
-            // Reset the auto clickers after disconnect.
+            if (configManager.data.keepEnabledAfterDisconnect) {
+                return; // Only reset the auto clickers after disconnect.
+            }
             autoClickingEnabled = false;
             for (Clicker clicker : clickers) {
                 clicker.releaseClickIfClicking();

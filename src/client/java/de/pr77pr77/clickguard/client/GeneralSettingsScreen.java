@@ -73,7 +73,7 @@ public class GeneralSettingsScreen extends Screen {
 
     public static class SettingsList extends ContainerObjectSelectionList<SettingsList.Entry> {
         public SettingsList(Minecraft minecraft, int width, HeaderAndFooterLayout layout) {
-            super(minecraft, width, layout.getContentHeight(), layout.getHeaderHeight(), 20);
+            super(minecraft, width, layout.getContentHeight(), layout.getHeaderHeight(), 24);
         }
 
         public void fillList() {
@@ -82,8 +82,16 @@ public class GeneralSettingsScreen extends Screen {
                         configManager.data.allowClickingWhenEnabled = value;
                         ClickGuardClient.configManager.save();
                     }, configManager.data.allowClickingWhenEnabled);
-            addEntry(allowClickingEntry, 20);
+            addEntry(allowClickingEntry, 24);
             allowClickingEntry.init();
+
+            OnOffButtonEntry keepEnabledAfterDisconnect = new OnOffButtonEntry(Component.translatable("clickguard.generalSettings.keepEnabledAfterDisconnect"),
+                    (_, value) -> {
+                        configManager.data.keepEnabledAfterDisconnect = value;
+                        ClickGuardClient.configManager.save();
+                    }, configManager.data.keepEnabledAfterDisconnect);
+            addEntry(keepEnabledAfterDisconnect, 24);
+            keepEnabledAfterDisconnect.init();
         }
 
         @Override

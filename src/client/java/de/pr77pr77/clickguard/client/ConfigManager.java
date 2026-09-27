@@ -37,6 +37,7 @@ public class ConfigManager {
         List<Preset> presets = new ArrayList<>();
 
         public boolean allowClickingWhenEnabled = true;
+        boolean keepEnabledAfterDisconnect = false;
 
         public static class Preset {
             public String name = "";

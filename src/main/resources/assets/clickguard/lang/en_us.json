@@ -87,6 +87,7 @@
   "clickguard.autoDisconnectScreen.hiddenText.10": "I told you so!",
   "clickguard.generalSettings": "General Settings",
   "clickguard.generalSettings.allowClickingWhenEnabled": "Allow clicking even when auto clicker is enabled",
+  "clickguard.generalSettings.keepEnabledAfterDisconnect": "Keep the auto clicker enabled after disconnecting",
   "clickguard.milliseconds": "%s milliseconds",
   "clickguard.seconds": "%s seconds",
   "clickguard.minutes": "%s minutes",

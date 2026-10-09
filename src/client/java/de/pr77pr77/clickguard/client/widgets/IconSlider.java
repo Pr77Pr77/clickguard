@@ -1,4 +1,4 @@
-package de.pr77pr77.clickguard.client;
+package de.pr77pr77.clickguard.client.widgets;
 
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.AbstractSliderButton;
@@ -20,7 +20,7 @@ public class IconSlider extends AbstractSliderButton {
     static final int HANDLE_WIDTH = 9;
     static final int HANDLE_HEIGHT = 8;
     static final int HANDLE_HALF_WIDTH = 4; // Border width left and right
-    static final int HEIGHT = 25;
+    public static final int HEIGHT = 25;
 
     static final ResourceLocation HANDLE_SPRITE = id("widget/arrow_slider_handle");
     static final ResourceLocation HANDLE_HIGHLIGHTED_SPRITE = id("widget/arrow_slider_handle_highlighted");

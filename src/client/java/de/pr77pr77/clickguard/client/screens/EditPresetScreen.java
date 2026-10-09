@@ -1,5 +1,10 @@
-package de.pr77pr77.clickguard.client;
+package de.pr77pr77.clickguard.client.screens;
 
+import com.mojang.blaze3d.platform.cursor.CursorTypes;
+import de.pr77pr77.clickguard.client.ClickGuardClient;
+import de.pr77pr77.clickguard.client.ConfigManager;
+import de.pr77pr77.clickguard.client.widgets.FractionSlider;
+import de.pr77pr77.clickguard.client.widgets.IconSlider;
 import net.minecraft.client.KeyMapping;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
@@ -7,10 +12,15 @@ import net.minecraft.client.gui.components.*;
 import net.minecraft.client.gui.components.events.GuiEventListener;
 import net.minecraft.client.gui.layouts.HeaderAndFooterLayout;
 import net.minecraft.client.gui.narration.NarratableEntry;
+import net.minecraft.client.gui.narration.NarratedElementType;
+import net.minecraft.client.gui.narration.NarrationElementOutput;
 import net.minecraft.client.gui.screens.Screen;
+import net.minecraft.client.input.MouseButtonEvent;
+import net.minecraft.client.renderer.RenderPipelines;
 import net.minecraft.network.chat.CommonComponents;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.world.item.ItemStack;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.ArrayList;
@@ -198,7 +208,7 @@ public class EditPresetScreen extends Screen {
         }
 
         public void addFilterEntry(ConfigManager.ConfigData.Preset preset) {
-            addEntry(new FilterEntry(minecraft, preset), 55);
+            addEntry(new FilterEntry(minecraft, preset), 55 + 2 + FilterEntry.ItemSelectionList.ITEM_HEIGHT * 2 + 4);
         }
 
         public void addTitleEntry(Component label) {
@@ -740,6 +750,10 @@ public class EditPresetScreen extends Screen {
         public static class FilterEntry extends Entry {
             public final Checkbox checkboxEntities;
             public final Checkbox checkboxBlocks;
+
+            private final ItemSelectionList mainHandItemSelections;
+            private final ItemSelectionList offHandItemSelections;
+
             private final Minecraft minecraft;
 
             public FilterEntry(Minecraft minecraft, ConfigManager.ConfigData.Preset preset) { // Sets the value to preset
@@ -747,7 +761,18 @@ public class EditPresetScreen extends Screen {
                 checkboxEntities = Checkbox.builder(Component.translatable("clickguard.filter.entities"), minecraft.font)
                         .selected(preset.filterEntities).onValueChange((checkbox, value) -> preset.filterEntities = value).build();
                 checkboxBlocks = Checkbox.builder(Component.translatable("clickguard.filter.blocks"), minecraft.font)
-                        .selected(preset.filterBlocks).onValueChange((ceckbox, value) -> preset.filterBlocks = value).build();
+                        .selected(preset.filterBlocks).onValueChange((checkbox, value) -> preset.filterBlocks = value).build();
+
+                if (preset.mainHandFilters == null) {
+                    preset.mainHandFilters = new ArrayList<>();
+                }
+                mainHandItemSelections = new ItemSelectionList(0, 0, 0,
+                        Component.translatable("clickguard.filter.item.mainhand"), preset.mainHandFilters);
+                if (preset.offHandFilters == null) {
+                    preset.offHandFilters = new ArrayList<>();
+                }
+                offHandItemSelections = new ItemSelectionList(0, 0, 0,
+                        Component.translatable("clickguard.filter.item.offhand"), preset.offHandFilters);
             }
 
             @Override
@@ -756,6 +781,12 @@ public class EditPresetScreen extends Screen {
                 checkboxEntities.setWidth(getContentWidth() - 4);
                 checkboxBlocks.setPosition(getContentX() + 2, checkboxEntities.getBottom() + 2);
                 checkboxBlocks.setWidth(getContentWidth() - 4);
+
+                mainHandItemSelections.setPosition(getContentX() + 2, checkboxBlocks.getBottom() + 2);
+                mainHandItemSelections.setMaxWidth(getContentWidth() - 4);
+
+                offHandItemSelections.setPosition(getContentX() + 2, mainHandItemSelections.getBottom() + 2);
+                offHandItemSelections.setMaxWidth(getContentWidth() - 4);
             }
 
             @Override
@@ -771,22 +802,129 @@ public class EditPresetScreen extends Screen {
                 );
 
                 checkboxEntities.setY(getContentY() + 2 + minecraft.font.lineHeight + 2);
-                checkboxEntities.setWidth(getContentWidth() - 4);
                 checkboxEntities.render(graphics, mouseX, mouseY, a);
 
                 checkboxBlocks.setY(checkboxEntities.getBottom() + 2);
-                checkboxBlocks.setWidth(getContentWidth() - 4);
                 checkboxBlocks.render(graphics, mouseX, mouseY, a);
+
+                mainHandItemSelections.setPosition(getContentX() + 2, checkboxBlocks.getBottom() + 2);
+                mainHandItemSelections.render(graphics, mouseX, mouseY, a);
+
+                offHandItemSelections.setPosition(getContentX() + 2, mainHandItemSelections.getBottom() + 2);
+                offHandItemSelections.render(graphics, mouseX, mouseY, a);
             }
 
             @Override
             public @NotNull List<? extends GuiEventListener> children() {
-                return List.of(checkboxEntities, checkboxBlocks);
+                return List.of(checkboxEntities, checkboxBlocks, mainHandItemSelections, offHandItemSelections);
             }
 
             @Override
             public @NotNull List<? extends NarratableEntry> narratables() {
-                return List.of(NarratableEntryOfComponent(Component.translatable("clickguard.filter.title")), checkboxEntities, checkboxBlocks);
+                return List.of(NarratableEntryOfComponent(Component.translatable("clickguard.filter.title")),
+                        checkboxEntities, checkboxBlocks, mainHandItemSelections, offHandItemSelections);
+            }
+
+            class ItemSelectionList extends AbstractWidget {
+                static final int ITEM_HEIGHT = 22;
+                static final int ITEM_WIDTH = 20;
+
+                private final MultiLineTextWidget label;
+
+                public List<ItemStack> items;
+
+                public ItemSelectionList(int x, int y, int maxWidth, Component message, List<ItemStack> items) {
+                    super(x, y, 0, ITEM_HEIGHT, message);
+                    this.items = items;
+
+                    label = new MultiLineTextWidget(message, minecraft.font);
+                    label.setMaxRows(1);
+                    label.setCentered(false);
+                    label.setPosition(x, y + (ItemSelectionList.ITEM_HEIGHT - label.getHeight()) / 2);
+
+                    setMaxWidth(maxWidth);
+                }
+
+                void setMaxWidth(int maxWidth) {
+                    setWidth(Math.min((items.isEmpty() ? 1 : items.size()) * ITEM_WIDTH + 2 + label.getWidth() + 2, maxWidth)); // +2 for left and right borders
+                }
+
+                @Override
+                public void setPosition(int x, int y) {
+                    super.setPosition(x, y);
+                    label.setX(x);
+                }
+
+                @Override
+                public void onClick(@NotNull MouseButtonEvent event, boolean doubleClick) {
+                    if (isHovered() && minecraft.player != null) {
+                        minecraft.gui.setScreen(new ItemFilterSelectScreen(minecraft.player, items, minecraft.gui.screen()));
+                    } else {
+                        super.onClick(event, doubleClick);
+                    }
+                }
+
+                @Override
+                protected void renderWidget(@NotNull GuiGraphics graphics, int mouseX, int mouseY, float a) {
+                    label.setY(getY() + (ItemSelectionList.ITEM_HEIGHT - label.getHeight()) / 2 + 1); // +1 because the texture has one transparent row.
+                    label.renderWidget(graphics, mouseX, mouseY, a);
+
+                    boolean tooltipSet = false;
+                    int baseX = label.getRight() + 2;
+                    for (int itemIndex = 0; itemIndex < items.size(); itemIndex++) {
+                        int itemX = baseX + itemIndex * ITEM_WIDTH + 1; // +1 for left border
+                        if (itemIndex < items.size() - 1 && // Not the last one
+                                itemX > getRight() - ITEM_WIDTH - 4 - minecraft.font.width("...")) { // -1 for right border
+                            graphics.drawString(minecraft.font, "...",
+                                    itemX + 4, getY() + ITEM_HEIGHT - minecraft.font.lineHeight,
+                                    TEXT_GRAY, true);
+                            break;
+                        }
+                        if (itemIndex == 0) {
+                            // No cropping:
+                            graphics.blitSprite(RenderPipelines.GUI_TEXTURED, ResourceLocation.withDefaultNamespace("hud/hotbar_offhand_left"),
+                                    itemX - 1, getY(),
+                                    29, 24);
+                        } else {
+                            graphics.blitSprite(RenderPipelines.GUI_TEXTURED, ResourceLocation.withDefaultNamespace("hud/hotbar_offhand_left"),
+                                    29, 24,
+                                    1, 0, // Crop one pixel on the left
+                                    itemX, getY(),
+                                    28, 24);
+                        }
+                        graphics.renderItem(items.get(itemIndex), itemX + 2, getY() + 4, 0);
+                        graphics.renderItemDecorations(minecraft.font, items.get(itemIndex), itemX + 2, getY() + 4);
+                        if (isHovered() && mouseX <= itemX + ITEM_WIDTH && mouseX >= itemX && mouseY <= getBottom() && mouseY >= getY()) {
+                            List<Component> tooltipList = new ArrayList<>(getTooltipFromItem(minecraft, items.get(itemIndex)));
+                            tooltipList.add(Component.translatable("clickguard.filter.item.clickToEdit"));
+                            graphics.setTooltipForNextFrame(minecraft.font, tooltipList,
+                                    items.get(itemIndex).getTooltipImage(), mouseX, mouseY);
+                            tooltipSet = true;
+                        }
+                    }
+
+                    if (items.isEmpty()) {
+                        graphics.blitSprite(RenderPipelines.GUI_TEXTURED, ResourceLocation.withDefaultNamespace("hud/hotbar_offhand_left"),
+                                baseX, getY(),
+                                29, 24);
+                        if (isHovered()) {
+                            graphics.setTooltipForNextFrame(minecraft.font, Component.translatable("clickguard.filter.item.clickToSetUp"),
+                                    mouseX, mouseY);
+                        }
+                    } else if (isHovered() && !tooltipSet) {
+                        graphics.setTooltipForNextFrame(minecraft.font, Component.translatable("clickguard.filter.item.clickToEdit"),
+                                mouseX, mouseY);
+                    }
+
+                    if (isHovered()) {
+                        graphics.requestCursor(CursorTypes.POINTING_HAND);
+                    }
+                }
+
+                @Override
+                protected void updateWidgetNarration(NarrationElementOutput output) {
+                    output.add(NarratedElementType.TITLE, Component.translatable("clickguard.filter.item.selection"));
+                }
             }
         }
 

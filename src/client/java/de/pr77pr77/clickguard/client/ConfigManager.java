@@ -1,16 +1,21 @@
 package de.pr77pr77.clickguard.client;
 
-import com.google.gson.Gson;
-import com.google.gson.GsonBuilder;
-import com.google.gson.TypeAdapter;
+import com.google.gson.*;
 import com.google.gson.stream.JsonReader;
 import com.google.gson.stream.JsonToken;
 import com.google.gson.stream.JsonWriter;
+import com.mojang.serialization.DataResult;
+import com.mojang.serialization.DynamicOps;
+import com.mojang.serialization.JsonOps;
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientLifecycleEvents;
+import net.fabricmc.fabric.api.client.networking.v1.ClientPlayConnectionEvents;
 import net.fabricmc.loader.api.FabricLoader;
 import net.minecraft.client.KeyMapping;
 import net.minecraft.client.Minecraft;
+import net.minecraft.data.registries.VanillaRegistries;
 import net.minecraft.network.chat.Component;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.core.HolderLookup.Provider;
 
 import java.io.IOException;
 import java.nio.file.Files;
@@ -20,24 +25,37 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
 
+import static de.pr77pr77.clickguard.ClickGuard.LOGGER;
+
 public class ConfigManager {
     private final Path filePath;
     public ConfigData data;
 
-    private static final Gson GSON = new GsonBuilder()
-            .registerTypeAdapter(KeyMapping.class, new KeyMappingAdapter())
-            .setPrettyPrinting().create();
+    private Gson gson;
 
     ConfigManager() {
         filePath = FabricLoader.getInstance().getConfigDir().resolve("clickguard.json");
-        ClientLifecycleEvents.CLIENT_STARTED.register(minecraft -> load());
+        ClientLifecycleEvents.CLIENT_STARTED.register(minecraft -> {
+            gson = new GsonBuilder()
+                    .registerTypeAdapter(KeyMapping.class, new KeyMappingAdapter())
+                    .registerTypeAdapter(ItemStack.class, new ItemStackTypeAdapter(VanillaRegistries.createWorldLookup(), true))
+                    .setPrettyPrinting().create();
+            load();
+        });
+        ClientPlayConnectionEvents.JOIN.register((connection, packetSender, minecraft) -> {
+            gson = new GsonBuilder()
+                    .registerTypeAdapter(KeyMapping.class, new KeyMappingAdapter())
+                    .registerTypeAdapter(ItemStack.class, new ItemStackTypeAdapter(connection.registryAccess()))
+                    .setPrettyPrinting().create();
+            load();
+        });
     }
 
     public static class ConfigData {
-        List<Preset> presets = new ArrayList<>();
+        public List<Preset> presets = new ArrayList<>();
 
         public boolean allowClickingWhenEnabled = true;
-        boolean keepEnabledAfterDisconnect = false;
+        public boolean keepEnabledAfterDisconnect = false;
 
         public static class Preset {
             public String name = "";
@@ -49,6 +67,9 @@ public class ConfigManager {
 
             public boolean filterEntities = false;
             public boolean filterBlocks = false;
+
+            public List<ItemStack> mainHandFilters;
+            public List<ItemStack> offHandFilters;
 
             public SimpleAction playerDamaged = new SimpleAction();
 
@@ -140,7 +161,7 @@ public class ConfigManager {
             Files.createDirectories(filePath.getParent());
             if (Files.exists(filePath)) {
                 String json = Files.readString(filePath);
-                data = GSON.fromJson(json, ConfigData.class);
+                data = gson.fromJson(json, ConfigData.class);
                 if (data == null) {
                     data = new ConfigData();
                 }
@@ -157,7 +178,7 @@ public class ConfigManager {
     public void save() {
         String json;
         synchronized (this) {
-            json = GSON.toJson(data);
+            json = gson.toJson(data);
         }
         CompletableFuture.runAsync(() -> {
             try {
@@ -167,5 +188,65 @@ public class ConfigManager {
                 e.printStackTrace();
             }
         });
+    }
+
+    public static class ItemStackTypeAdapter extends TypeAdapter<ItemStack> {
+        private final DynamicOps<JsonElement> ops;
+
+        private final boolean readingErrorLowPriority;
+
+        public ItemStackTypeAdapter(Provider registries) {
+            this(registries, false);
+        }
+
+        public ItemStackTypeAdapter(Provider registries, boolean readingErrorLowPriority) {
+            this.ops = registries.createSerializationContext(JsonOps.INSTANCE);
+            this.readingErrorLowPriority = readingErrorLowPriority;
+        }
+
+        @Override
+        public void write(JsonWriter out, ItemStack stack) throws IOException {
+            if (stack == null || stack.isEmpty()) {
+                out.nullValue();
+                return;
+            }
+
+            DataResult<JsonElement> result = ItemStack.CODEC.encodeStart(ops, stack);
+            if (result.isSuccess()) {
+                out.jsonValue(result.getOrThrow().toString());
+            } else if (result.error().isPresent()) {
+                LOGGER.error("Could not save an ItemStack: " + result.error().get().message());
+                out.nullValue();
+            } else {
+                LOGGER.error("Could not save an ItemStack due to an unknown error.");
+            }
+        }
+
+        @Override
+        public ItemStack read(JsonReader in) throws IOException {
+            if (in.peek() == JsonToken.NULL) {
+                in.nextNull();
+                return ItemStack.EMPTY;
+            }
+
+            JsonElement json = JsonParser.parseReader(in);
+            DataResult<ItemStack> result = ItemStack.CODEC.parse(ops, json);
+            if (result.isSuccess()) {
+                return result.getOrThrow();
+            } else if (result.error().isPresent()) {
+                writeReadingErrorLog("Could not load an ItemStack: " + result.error().get().message());
+            } else {
+                writeReadingErrorLog("Could not load an ItemStack due to an unknown error.");
+            }
+            return ItemStack.EMPTY;
+        }
+
+        private void writeReadingErrorLog(String message) {
+            if (readingErrorLowPriority) {
+                LOGGER.info(message);
+            } else {
+                LOGGER.error(message);
+            }
+        }
     }
 }

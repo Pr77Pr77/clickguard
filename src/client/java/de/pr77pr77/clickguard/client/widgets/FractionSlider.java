@@ -1,4 +1,4 @@
-package de.pr77pr77.clickguard.client;
+package de.pr77pr77.clickguard.client.widgets;
 
 import net.minecraft.client.gui.components.AbstractSliderButton;
 import net.minecraft.network.chat.Component;

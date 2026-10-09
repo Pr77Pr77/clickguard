@@ -2,12 +2,18 @@ package de.pr77pr77.clickguard.client;
 
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.player.LocalPlayer;
+import net.minecraft.core.component.DataComponentMap;
+import net.minecraft.core.component.DataComponentType;
+import net.minecraft.core.component.TypedDataComponent;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.EntityHitResult;
 import net.minecraft.world.phys.HitResult;
 import org.jspecify.annotations.Nullable;
+
+import java.util.List;
+import java.util.Objects;
 
 import static de.pr77pr77.clickguard.client.ClickGuardClient.autoClickingEnabled;
 import static de.pr77pr77.clickguard.client.ClickGuardClient.formatDuration;
@@ -42,7 +48,7 @@ public class Clicker {
         preset.playerDamaged.triggered = false;
     }
 
-    public void handleAutomaticClicks() { // Returns weather the clicker should be stopped
+    public void handleAutomaticClicks() {
         if (!preset.enabled || !autoClickingEnabled) {
             return;
         }
@@ -76,6 +82,11 @@ public class Clicker {
                         releaseClick(); // Unfulfilled filters release the click too.
                     }
                 }
+                if (Minecraft.getInstance().player != null &&
+                        (checkItemFilterNoMatch(Minecraft.getInstance().player.getMainHandItem(), preset.mainHandFilters) ||
+                                checkItemFilterNoMatch(Minecraft.getInstance().player.getOffhandItem(), preset.offHandFilters))) {
+                    releaseClick();
+                }
                 break;
             case COOLDOWN_AWARE:
                 boolean ready = Minecraft.getInstance().player != null &&
@@ -88,6 +99,38 @@ public class Clicker {
                     releaseClick();
                 }
         }
+    }
+
+    boolean checkItemFilterNoMatch(ItemStack checkItem, List<ItemStack> filterItems) {
+        if (Minecraft.getInstance().player == null || filterItems == null || filterItems.isEmpty()) {
+            return false;
+        }
+        if (checkItem.isEmpty()) {
+            return true;
+        }
+        for (ItemStack filterItem : filterItems) {
+            if (!checkItem.is(filterItem.getItem())) { // Base item check
+                continue;
+            }
+            if (filterItem.getCount() > 1 && checkItem.getCount() != filterItem.getCount()) {
+                continue;
+            }
+
+            DataComponentMap requiredComponents = filterItem.getComponentsPatch().split().added();
+
+            for (TypedDataComponent<?> requiredComponent : requiredComponents) {
+                DataComponentType<?> type = requiredComponent.type();
+                Object filterValue = requiredComponent.value();
+
+                // Get the value of the same type on checkItem
+                Object checkValue = checkItem.get(type);
+                if(!Objects.equals(filterValue, checkValue)) { // Includes checkValue not being null.
+                    return true;
+                }
+            }
+            return false; // All checks passed!
+        }
+        return true;
     }
 
     public ClickGuardClient.@Nullable AutoStoppedInfo checkActions() {
@@ -174,6 +217,11 @@ public class Clicker {
                     && !(preset.filterEntities && hitResult instanceof EntityHitResult)) {
                 return;
             }
+        }
+        if (Minecraft.getInstance().player != null &&
+                (checkItemFilterNoMatch(Minecraft.getInstance().player.getMainHandItem(), preset.mainHandFilters) ||
+                        checkItemFilterNoMatch(Minecraft.getInstance().player.getOffhandItem(), preset.offHandFilters))) {
+            return;
         }
         preset.keybind.setDown(true);
         ++preset.keybind.clickCount;

@@ -1,5 +1,7 @@
-package de.pr77pr77.clickguard.client;
+package de.pr77pr77.clickguard.client.screens;
 
+import de.pr77pr77.clickguard.client.ClickGuardClient;
+import de.pr77pr77.clickguard.client.ConfigManager;
 import net.minecraft.ChatFormatting;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;

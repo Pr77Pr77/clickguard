@@ -1,6 +1,9 @@
 package de.pr77pr77.clickguard.client;
 
 import com.mojang.blaze3d.platform.InputConstants;
+import de.pr77pr77.clickguard.client.screens.AutoDisconnectScreen;
+import de.pr77pr77.clickguard.client.screens.EditPresetScreen;
+import de.pr77pr77.clickguard.client.screens.PresetsScreen;
 import net.fabricmc.api.ClientModInitializer;
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents;
 import net.fabricmc.fabric.api.client.keymapping.v1.KeyMappingHelper;
@@ -152,10 +155,10 @@ public class ClickGuardClient implements ClientModInitializer {
     }
 
     public static class AutoDisconnectInfo {
-        final ConfigManager.ConfigData.Preset causingPreset;
-        final ConfigManager.ConfigData.SimpleAction causingAction;
-        float health;
-        int hunger;
+        public final ConfigManager.ConfigData.Preset causingPreset;
+        public final ConfigManager.ConfigData.SimpleAction causingAction;
+        public float health;
+        public int hunger;
 
         public AutoDisconnectInfo(ConfigManager.ConfigData.Preset causingPreset, ConfigManager.ConfigData.SimpleAction causingAction) {
             this.causingPreset = causingPreset;

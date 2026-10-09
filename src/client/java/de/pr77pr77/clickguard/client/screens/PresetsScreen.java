@@ -1,5 +1,8 @@
-package de.pr77pr77.clickguard.client;
+package de.pr77pr77.clickguard.client.screens;
 
+import de.pr77pr77.clickguard.client.ClickGuardClient;
+import de.pr77pr77.clickguard.client.Clicker;
+import de.pr77pr77.clickguard.client.ConfigManager;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.components.*;
@@ -19,9 +22,9 @@ import static de.pr77pr77.clickguard.client.ClickGuardClient.*;
 
 public class PresetsScreen extends Screen {
     private final HeaderAndFooterLayout layout = new HeaderAndFooterLayout(this);
-    PresetsList list;
+    public PresetsList list;
 
-    Button startStopButton;
+    public Button startStopButton;
 
     Screen parent;
 
@@ -43,13 +46,13 @@ public class PresetsScreen extends Screen {
 
         LinearLayout footerButtons = LinearLayout.horizontal().spacing(8);
         footerButtons.addChild(Button.builder(CommonComponents.GUI_DONE,
-                _ -> onClose()).size(92, 20).build());
+                _ -> onClose()).size(100, 20).build());
         startStopButton = Button.builder(getStartStopButtonComponent(),
-                _ -> toggleAutoClickingEnabled()).size(92, 20).build();
+                _ -> toggleAutoClickingEnabled()).size(100, 20).build();
         startStopButton.active = minecraft.level != null;
         footerButtons.addChild(startStopButton);
         footerButtons.addChild(Button.builder(Component.translatable("clickguard.generalSettings"),
-                _ -> minecraft.gui.setScreen(new GeneralSettingsScreen(this))).size(92, 20).build());
+                _ -> minecraft.gui.setScreen(new GeneralSettingsScreen(this))).size(100, 20).build());
         layout.addToFooter(footerButtons);
 
         layout.visitWidgets(this::addRenderableWidget);
@@ -83,7 +86,7 @@ public class PresetsScreen extends Screen {
         }
     }
 
-    static Component getStartStopButtonComponent() {
+    public static Component getStartStopButtonComponent() {
         return autoClickingEnabled ? Component.translatable("clickguard.stop") : Component.translatable("clickguard.start");
     }
 

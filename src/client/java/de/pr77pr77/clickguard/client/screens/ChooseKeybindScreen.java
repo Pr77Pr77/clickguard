@@ -68,6 +68,9 @@ public class ChooseKeybindScreen extends Screen {
     public void onClose() {
         assert minecraft != null;
         minecraft.setScreen(parent);
+        if (parent instanceof EditPresetScreen editPresetScreen) {
+            editPresetScreen.reload();
+        }
     }
 
     public static class KeybindsList extends ContainerObjectSelectionList<KeybindsList.Entry> {
@@ -88,7 +91,7 @@ public class ChooseKeybindScreen extends Screen {
                                 !screen.preset.keybind.getName().equals("key.attack")) {
                             screen.preset.clickingType = ConfigManager.ConfigData.ClickingType.CUSTOM_TIMING;
                         }
-                        minecraft.setScreen(screen.parent);
+                        screen.onClose();
                     } else {
                         minecraft.setScreen(new EditPresetScreen(screen.parent, keyMappingClicked));
                     }

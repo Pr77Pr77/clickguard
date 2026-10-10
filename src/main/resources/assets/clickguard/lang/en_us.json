@@ -1,5 +1,5 @@
 {
-  "key.categories.clickguard.clickguard": "ClickGuard",
+  "key.category.clickguard.clickguard": "ClickGuard",
   "key.clickguard.openPresetsScreen": "Open ClickGuard's presets menu",
   "key.clickguard.toggleClicking": "Toggle the ClickGuard auto clicker",
   "clickguard.hud.title": "ClickGuard is enabled:",

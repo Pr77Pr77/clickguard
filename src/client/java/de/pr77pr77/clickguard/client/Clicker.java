@@ -250,4 +250,8 @@ public class Clicker {
         }
         return action.stopClicker;
     }
+
+    public boolean getClicking(){
+        return clicking;
+    }
 }

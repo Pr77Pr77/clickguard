@@ -173,6 +173,15 @@ public class EditPresetScreen extends Screen {
         }
     }
 
+    public void reload(){
+        if (list == null) {
+            return;
+        }
+        list.clearEntries();
+        addOptions();
+        repositionElements();
+    }
+
     @Override
     public void onClose() {
         // Remove obsolete slider actions:

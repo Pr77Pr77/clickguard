@@ -46,6 +46,11 @@ public class Clicker {
         lastClickTime = System.nanoTime();
 
         preset.playerDamaged.triggered = false;
+
+        if (preset.clickingType == ConfigManager.ConfigData.ClickingType.CUSTOM_TIMING &&
+                preset.firstClickMoment == ConfigManager.ConfigData.FirstClickMoment.AFTER_INTERVAL) {
+            nextClickTime = System.nanoTime() + preset.customIntervalMS * 1_000_000L;
+        }
     }
 
     public void handleAutomaticClicks() {
@@ -58,7 +63,7 @@ public class Clicker {
                 if (now >= nextClickTime && !clicking) {
                     startClick();
                     long intervalNanos = preset.customIntervalMS * 1_000_000L;
-                    nextClickTime = now + intervalNanos;
+                    nextClickTime = now + preset.holdingDurationMS * 1_000_000L + intervalNanos;
 
                     clickReleaseTime = now + preset.holdingDurationMS * 1_000_000L;
                 }

@@ -69,23 +69,25 @@ public class Clicker {
                 break;
             case CONTINUOUS:
                 Minecraft minecraft = Minecraft.getInstance();
-                if (!clicking && minecraft.gui.screen() == null) {
-                    startClick(); // Clicking is stopped when the auto clicker is turned off, see releaseClickIfClicking()
-                }
                 if (minecraft.gui.screen() != null) {
-                    releaseClick(); // Screens stop clicks, so we can cleanly release the key and set clicking to false.
+                    releaseClickIfClicking(); // Screens stop clicks, so we can cleanly release the key and set clicking to false.
                 }
                 if (preset.filterBlocks || preset.filterEntities) {
                     HitResult hitResult = Minecraft.getInstance().hitResult;
                     if (!(preset.filterBlocks && hitResult instanceof BlockHitResult && hitResult.getType() == HitResult.Type.BLOCK)
                             && !(preset.filterEntities && hitResult instanceof EntityHitResult)) {
-                        releaseClick(); // Unfulfilled filters release the click too.
+                        releaseClickIfClicking(); // Unfulfilled filters release the click too.
+                        return;
                     }
                 }
                 if (Minecraft.getInstance().player != null &&
                         (checkItemFilterNoMatch(Minecraft.getInstance().player.getMainHandItem(), preset.mainHandFilters) ||
                                 checkItemFilterNoMatch(Minecraft.getInstance().player.getOffhandItem(), preset.offHandFilters))) {
-                    releaseClick();
+                    releaseClickIfClicking();
+                    return;
+                }
+                if (!clicking && minecraft.gui.screen() == null) {
+                    startClick(); // Clicking is stopped when the auto clicker is turned off, see releaseClickIfClicking()
                 }
                 break;
             case COOLDOWN_AWARE:
@@ -124,7 +126,7 @@ public class Clicker {
 
                 // Get the value of the same type on checkItem
                 Object checkValue = checkItem.get(type);
-                if(!Objects.equals(filterValue, checkValue)) { // Includes checkValue not being null.
+                if (!Objects.equals(filterValue, checkValue)) { // Includes checkValue not being null.
                     return true;
                 }
             }
@@ -251,7 +253,7 @@ public class Clicker {
         return action.stopClicker;
     }
 
-    public boolean getClicking(){
+    public boolean getClicking() {
         return clicking;
     }
 }

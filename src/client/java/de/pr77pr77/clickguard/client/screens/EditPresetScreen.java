@@ -173,7 +173,7 @@ public class EditPresetScreen extends Screen {
         }
     }
 
-    public void reload(){
+    public void reload() {
         if (list == null) {
             return;
         }
@@ -209,7 +209,7 @@ public class EditPresetScreen extends Screen {
         }
 
         public void addClickingTypeEntry(ConfigManager.ConfigData.Preset preset) {
-            addEntry(new ClickingTypeEntry(minecraft, preset), 2 + 20 + 5 + 10 + 20 + 5 + 10 + 20 + 5 + 10 + 20 + 6);
+            addEntry(new ClickingTypeEntry(minecraft, preset), 2 + 20 + 5 + 10 + 20 + 5 + 10 + 20 + 5 + 10 + 20 + 5 + 20 + 6);
         }
 
         public void addFilterEntry(ConfigManager.ConfigData.Preset preset) {
@@ -500,7 +500,8 @@ public class EditPresetScreen extends Screen {
             public final EditBox cpsEditBox;
             public final EditBox intervalEditBox;
             public final EditBox durationEditBox;
-            public final Tooltip noCustomTimingTooltip;
+            private final CycleButton<ConfigManager.ConfigData.FirstClickMoment> firstClickMomentButton;
+            public static final Tooltip WRONG_TYPE_TOOLTIP = Tooltip.create(Component.translatable("clickguard.timing.noCustomTiming"));
             private final Minecraft minecraft;
             private boolean initialized = false;
             private boolean suppressCpsUpdate = false;
@@ -514,10 +515,13 @@ public class EditPresetScreen extends Screen {
                 intervalEditBox = new EditBox(minecraft.font, 0, 0, 0, 20, Component.translatable("clickguard.timing.interval")); // Position and size set in init
                 durationEditBox = new EditBox(minecraft.font, 0, 0, 0, 20, Component.translatable("clickguard.timing.duration")); // Position and size set in init
 
-
-                noCustomTimingTooltip = Tooltip.create(Component.translatable("clickguard.timing.noCustomTiming"));
-
                 createTypeButton();
+
+                firstClickMomentButton = CycleButton.builder(ConfigManager.ConfigData.FirstClickMoment::getComponent,
+                                this.preset.firstClickMoment)
+                        .withValues(ConfigManager.ConfigData.FirstClickMoment.values())
+                        .create(0, 0, 0, 20, Component.translatable("clickguard.timing.firstClick"),
+                                (button, value) -> this.preset.firstClickMoment = value); // Position and size set in init
 
                 cpsEditBox.setResponder(value -> {
                     if (suppressCpsUpdate) {
@@ -643,18 +647,22 @@ public class EditPresetScreen extends Screen {
                     cpsEditBox.active = true;
                     intervalEditBox.active = true;
                     durationEditBox.active = true;
+                    firstClickMomentButton.active = true;
 
                     cpsEditBox.setTooltip(null);
                     intervalEditBox.setTooltip(null);
                     durationEditBox.setTooltip(null);
+                    firstClickMomentButton.setTooltip(null);
                 } else {
                     cpsEditBox.active = false;
                     intervalEditBox.active = false;
                     durationEditBox.active = false;
+                    firstClickMomentButton.active = false;
 
-                    cpsEditBox.setTooltip(noCustomTimingTooltip);
-                    intervalEditBox.setTooltip(noCustomTimingTooltip);
-                    durationEditBox.setTooltip(noCustomTimingTooltip);
+                    cpsEditBox.setTooltip(WRONG_TYPE_TOOLTIP);
+                    intervalEditBox.setTooltip(WRONG_TYPE_TOOLTIP);
+                    durationEditBox.setTooltip(WRONG_TYPE_TOOLTIP);
+                    firstClickMomentButton.setTooltip(WRONG_TYPE_TOOLTIP);
                 }
             }
 
@@ -683,6 +691,10 @@ public class EditPresetScreen extends Screen {
                 currentY += 10; // Label
                 durationEditBox.setPosition(getContentX() + 2, currentY);
                 durationEditBox.setSize(getContentWidth() - 5, 20);
+                currentY += 20 + 5;
+
+                firstClickMomentButton.setPosition(getContentX() + 2, currentY);
+                firstClickMomentButton.setSize(getContentWidth() - 4, 20);
 
                 if (!initialized) {
                     cpsEditBox.setValue(formatCpsFromMs(this.preset.customIntervalMS));
@@ -739,16 +751,19 @@ public class EditPresetScreen extends Screen {
                 );
                 durationEditBox.setY(getContentY() + 2 + 20 + 5 + 10 + 20 + 5 + 10 + 20 + 5 + 10);
                 durationEditBox.render(graphics, mouseX, mouseY, a);
+
+                firstClickMomentButton.setY(getContentY() + 2 + 20 + 5 + 10 + 20 + 5 + 10 + 20 + 5 + 10 + 20 + 5);
+                firstClickMomentButton.render(graphics, mouseX, mouseY, a);
             }
 
             @Override
             public @NonNull List<? extends GuiEventListener> children() {
-                return List.of(typeButton, cpsEditBox, intervalEditBox, durationEditBox);
+                return List.of(typeButton, cpsEditBox, intervalEditBox, durationEditBox, firstClickMomentButton);
             }
 
             @Override
             public @NonNull List<? extends NarratableEntry> narratables() {
-                return List.of(typeButton, cpsEditBox, intervalEditBox, durationEditBox);
+                return List.of(typeButton, cpsEditBox, intervalEditBox, durationEditBox, firstClickMomentButton);
             }
         }
 

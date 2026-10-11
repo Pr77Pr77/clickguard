@@ -64,6 +64,7 @@ public class ConfigManager {
             public ClickingType clickingType = ClickingType.CUSTOM_TIMING;
             public int customIntervalMS = 100; // 100 = 10 CPS
             public int holdingDurationMS = 40;
+            public FirstClickMoment firstClickMoment = FirstClickMoment.DIRECTLY;
 
             public boolean filterEntities = false;
             public boolean filterBlocks = false;
@@ -91,6 +92,21 @@ public class ConfigManager {
             public final String translationKey;
 
             ClickingType(String translationKey) {
+                this.translationKey = translationKey;
+            }
+
+            public Component getComponent() {
+                return Component.translatable(translationKey);
+            }
+        }
+
+        public enum FirstClickMoment{
+            DIRECTLY("clickguard.timing.firstClick.directly"),
+            AFTER_INTERVAL("clickguard.timing.firstClick.afterInterval");
+
+            public final String translationKey;
+
+            FirstClickMoment(String translationKey) {
                 this.translationKey = translationKey;
             }
 

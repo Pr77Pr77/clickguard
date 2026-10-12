@@ -36,7 +36,7 @@ public class ItemFilterSelectScreen extends AbstractContainerScreen<ItemFilterMe
     @Override
     public void onClose() {
         ClickGuardClient.configManager.save();
-        minecraft.gui.setScreen(parent);
+        minecraft.setScreen(parent);
     }
 
     @Override

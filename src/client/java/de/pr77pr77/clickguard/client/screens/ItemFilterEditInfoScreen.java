@@ -63,7 +63,7 @@ public class ItemFilterEditInfoScreen extends Screen {
 
     @Override
     public void onClose() {
-        minecraft.gui.setScreen(parent);
+        minecraft.setScreen(parent);
     }
 
     public class ItemComponentList extends ContainerObjectSelectionList<ItemComponentList.ComponentEntry> {

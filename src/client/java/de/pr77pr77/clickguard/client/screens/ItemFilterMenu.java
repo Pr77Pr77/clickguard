@@ -42,8 +42,8 @@ public class ItemFilterMenu extends AbstractContainerMenu {
     }
 
     void updateSlots() {
-        if (getRows() != initialRows && Minecraft.getInstance().player != null && Minecraft.getInstance().gui.screen() instanceof ItemFilterSelectScreen oldScreen) {
-            Minecraft.getInstance().gui.setScreen(new ItemFilterSelectScreen(Minecraft.getInstance().player, items, oldScreen.parent));
+        if (getRows() != initialRows && Minecraft.getInstance().player != null && Minecraft.getInstance().screen instanceof ItemFilterSelectScreen oldScreen) {
+            Minecraft.getInstance().setScreen(new ItemFilterSelectScreen(Minecraft.getInstance().player, items, oldScreen.parent));
         }
         slots.removeIf(slot -> (slot instanceof ItemFilterSlot));
         for (int y = 0; y < getRows(); ++y) {
@@ -72,8 +72,8 @@ public class ItemFilterMenu extends AbstractContainerMenu {
             if (slots.get(slotIndex).hasItem()) {
                 if (buttonNum == 0 && (!slots.get(slotIndex).getItem().getComponentsPatch().split().added().isEmpty() ||
                         slots.get(slotIndex).getItem().getMaxStackSize() > 1) &&
-                        Minecraft.getInstance().gui.screen() instanceof ItemFilterSelectScreen screen) {
-                    Minecraft.getInstance().gui.setScreen(new ItemFilterEditInfoScreen(screen, slots.get(slotIndex).getItem()));
+                        Minecraft.getInstance().screen instanceof ItemFilterSelectScreen screen) {
+                    Minecraft.getInstance().setScreen(new ItemFilterEditInfoScreen(screen, slots.get(slotIndex).getItem()));
                 } else if (buttonNum == 1) {
                     items.remove(slots.get(slotIndex).getItem());
                     updateSlots();

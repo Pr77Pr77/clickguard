@@ -24,13 +24,19 @@ public class ItemFilterSelectScreen extends AbstractContainerScreen<ItemFilterMe
     private static final ResourceLocation INVENTORY_BACKGROUND = ResourceLocation.withDefaultNamespace("textures/gui/container/generic_54.png");
 
     Screen parent;
-    int backgroundColor = getPixelColor(INVENTORY_BACKGROUND, 169, 18);
+    int backgroundColor;
 
     public ItemFilterSelectScreen(Player player, List<ItemStack> items, Screen parent) {
         super(new ItemFilterMenu(items, player.getInventory()), player.getInventory(), Component.translatable("clickguard.filter.item.selection"));
         imageHeight = Math.min(items.size() / 9 + 1, 6) * 18 + 17 + 96;
         inventoryLabelY = imageHeight - 94;
         this.parent = parent;
+    }
+
+    @Override
+    protected void init() {
+        super.init();
+        backgroundColor = getPixelColor(INVENTORY_BACKGROUND, 169, 18);
     }
 
     @Override
@@ -90,6 +96,9 @@ public class ItemFilterSelectScreen extends AbstractContainerScreen<ItemFilterMe
     }
 
     public int getPixelColor(ResourceLocation textureLocation, int x, int y) {
+        if (minecraft == null) {
+            return 0xFFFF00FF;
+        }
         Optional<Resource> texture = minecraft.getResourceManager().getResource(textureLocation);
 
         if (texture.isPresent()) {

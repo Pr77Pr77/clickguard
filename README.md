@@ -10,11 +10,12 @@ automatic stopping, system notifications, and automatic disconnecting in the fol
 - At a specific weapon durability
 - After a specific time of the auto clicker not clicking because of filters
 
-The mod also lets you only click on entities, blocks or both.
+The mod also lets you filter only clicking on entities, blocks or both and only clicking with specific items in your
+hands.
 
 ## Installation
 
-This mod is only supported by the Fabric mod loader. For installation guides regarding Fabric itself please, use the
+This mod is only supported by the Fabric mod loader. For installation guides regarding Fabric itself please use the
 official [Fabric player guides](https://docs.fabricmc.net/players/).
 
 You can download the mod from either [Modrinth](https://modrinth.com/mod/clickguard),
@@ -79,18 +80,36 @@ By clicking on the button "Clicking type", you can cycle through the following t
 - Custom timing: Presses the key according to the times set below
 - Cooldown aware: Presses the key again as soon as the cooldown is over
 
-The clicking speed and duration can only be set if "Custom timing" is selected. The "Clicks per second" and "Interval
-between clicks" text fields set the clicking speed. This means that when one of the values is changed, the other will be
-changed too. You can just enter the timing in your preferred unit. The "Click duration" text field can be used to set
-the duration of the automatically performed click. The value has to be less than the clicking interval.
+The clicking speed, duration and the moment the first click should be performed can only be set if "Custom timing" is
+selected. The "Clicks per second" and "Interval between clicks" text fields set the clicking speed. This means that when
+one of the values is changed, the other will be changed too. You can just enter the timing in your preferred unit. The
+"Click duration" text field can be used to set the duration of the automatically performed click. The value has to be
+less than the clicking interval.
+
+By clicking on the button "First click", you can cycle through the moments, when the first click should be performed:
+
+- Directly after enabling
+- Wait for one interval duration
 
 ### Filters
 
 ![Filter element](resources/screenshots/edit-elements/filter.png)
 
-Filters let the auto clicker only click if an entity or a block is within your reach. If both "Entities" and "Blocks"
-are selected, the auto clicker will only click if something is within reach. If nothing is selected, the auto clicker
-will click, even if there is nothing in your reach. This setting doesn't affect other presets.
+Filters let the auto clicker only click if an entity or a block is within your reach or if you are holding a specific
+item. If both "Entities" and "Blocks" are selected, the auto clicker will only click if something is within reach. You
+can set multiple items as a filter for held items by clicking on the slot or the label. This will open an inventory-like
+menu:
+
+![Item selection screen](resources/screenshots/item-selection.png)
+*The inventory-like screen for setting item filters*
+
+By clicking an item from your inventory, it gets duplicated to your mouse cursor. You can then left-click to place the
+item into a filter slot. After placing an item in an empty slot, a new empty slot will appear. You can delete items from
+the filter by right-clicking. Their count can be edited and information (components) can be ignored by left-clicking on
+a filter item.
+
+If nothing is selected, the auto clicker will click, even if there is nothing in your reach and you are holding any or
+no item. This setting doesn't affect other presets.
 
 ### Handling of actions
 
@@ -141,6 +160,20 @@ These actions are also created by clicking on the button labeled
 to be triggered if the auto clicker did not perform a click. The auto clicker not performing a click can be due to
 filters. This option does not take other presets into account for the wait time, but reactions can have an impact on
 other presets.
+
+## General Settings
+
+Clicking the "General Settings" button in the presets menu opens the following screen:
+
+![General Settings Screen](resources/screenshots/general-settings.png)
+*The menu for changing general settings regarding every preset*
+
+This screen contains two toggles:
+
+- Allow clicking even when auto clicker is enabled: Allows you to press a key which is automatically pressed instead of
+  blocking the input (Default: ON)
+- Keep the auto clicker enabled after disconnecting: The clicker stays active after disconnecting and joining another or
+  the same world or server. (Default: OFF)
 
 ## Reporting issues, getting help and suggesting features
 

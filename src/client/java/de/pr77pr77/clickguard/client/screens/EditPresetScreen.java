@@ -17,7 +17,6 @@ import net.minecraft.client.gui.narration.NarrationElementOutput;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.input.MouseButtonEvent;
 import net.minecraft.client.renderer.RenderPipelines;
-import net.minecraft.core.component.DataComponents;
 import net.minecraft.network.chat.CommonComponents;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.Identifier;
@@ -920,8 +919,8 @@ public class EditPresetScreen extends Screen {
                             List<Component> tooltipList = new ArrayList<>(getTooltipFromItem(minecraft, items.get(itemIndex)));
                             tooltipList.add(Component.translatable("clickguard.filter.item.clickToEdit"));
                             graphics.setTooltipForNextFrame(minecraft.font, tooltipList,
-                                    items.get(itemIndex).getTooltipImage(), mouseX, mouseY,
-                                    items.get(itemIndex).get(DataComponents.TOOLTIP_STYLE), true);
+                                    items.get(itemIndex).getTooltipImage(), mouseX, mouseY
+                            );
                             tooltipSet = true;
                         }
                     }

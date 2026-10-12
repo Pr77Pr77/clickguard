@@ -38,7 +38,7 @@ public class ConfigManager {
         ClientLifecycleEvents.CLIENT_STARTED.register(_ -> {
             gson = new GsonBuilder()
                     .registerTypeAdapter(KeyMapping.class, new KeyMappingAdapter())
-                    .registerTypeAdapter(ItemStack.class, new ItemStackTypeAdapter(VanillaRegistries.createWorldLookup(), true))
+                    .registerTypeAdapter(ItemStack.class, new ItemStackTypeAdapter(VanillaRegistries.createLookup(), true))
                     .setPrettyPrinting().create();
             load();
         });

@@ -922,7 +922,8 @@ public class EditPresetScreen extends Screen {
                             List<Component> tooltipList = new ArrayList<>(getTooltipFromItem(minecraft, items.get(itemIndex)));
                             tooltipList.add(Component.translatable("clickguard.filter.item.clickToEdit"));
                             graphics.setTooltipForNextFrame(minecraft.font, tooltipList,
-                                    items.get(itemIndex).getTooltipImage(), mouseX, mouseY);
+                                    items.get(itemIndex).getTooltipImage(), mouseX, mouseY
+                            );
                             tooltipSet = true;
                         }
                     }

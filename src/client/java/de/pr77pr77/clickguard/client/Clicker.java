@@ -91,7 +91,7 @@ public class Clicker {
                     releaseClickIfClicking();
                     return;
                 }
-                if (!clicking && minecraft.gui.screen() == null) {
+                if (!clicking && minecraft.screen == null) {
                     startClick(); // Clicking is stopped when the auto clicker is turned off, see releaseClickIfClicking()
                 }
                 break;

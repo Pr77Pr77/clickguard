@@ -879,7 +879,7 @@ public class EditPresetScreen extends Screen {
                 @Override
                 public void onClick(@NonNull MouseButtonEvent event, boolean doubleClick) {
                     if (isHovered() && minecraft.player != null) {
-                        minecraft.gui.setScreen(new ItemFilterSelectScreen(minecraft.player, items, minecraft.gui.screen()));
+                        minecraft.setScreen(new ItemFilterSelectScreen(minecraft.player, items, minecraft.screen));
                     } else {
                         super.onClick(event, doubleClick);
                     }

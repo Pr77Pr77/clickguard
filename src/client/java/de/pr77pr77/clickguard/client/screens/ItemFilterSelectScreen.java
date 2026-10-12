@@ -29,8 +29,8 @@ public class ItemFilterSelectScreen extends AbstractContainerScreen<ItemFilterMe
     public ItemFilterSelectScreen(Player player, List<ItemStack> items, Screen parent) {
         super(new ItemFilterMenu(items, player.getInventory()), player.getInventory(), Component.translatable("clickguard.filter.item.selection"));
         imageHeight = Math.min(items.size() / 9 + 1, 6) * 18 + 17 + 96;
+        inventoryLabelY = imageHeight - 94;
         this.parent = parent;
-
     }
 
     @Override
@@ -49,6 +49,12 @@ public class ItemFilterSelectScreen extends AbstractContainerScreen<ItemFilterMe
         if (minecraft.player != null) {
             menu.clicked(slotId, buttonNum, containerInput, minecraft.player);
         }
+    }
+
+    @Override
+    public void render(@NonNull GuiGraphics graphics, int mouseX, int mouseY, float a) {
+        super.render(graphics, mouseX, mouseY, a);
+        this.renderTooltip(graphics, mouseX, mouseY);
     }
 
     @Override
